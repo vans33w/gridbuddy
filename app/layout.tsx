@@ -39,9 +39,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Link href="/tracks" className="hover:text-red-600 transition-colors">
                   Tracks
                 </Link>
-                <Link href="/popular-tracks" className="hover:text-red-600 transition-colors">
-                  Popular
-                </Link>
               </nav>
 
               <HeaderAuth />
