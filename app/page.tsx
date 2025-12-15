@@ -16,9 +16,6 @@ export default function HomePage() {
           <Link className="underline" href="/tracks">
             Tracks
           </Link>
-          <Link className="underline" href="/popular-tracks">
-            Popular Tracks
-          </Link>
         </div>
       </div>
     </main>
