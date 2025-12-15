@@ -48,7 +48,7 @@ export default function MomentsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // ✅ edit state
+  // edit state
   const [editingId, setEditingId] = useState<number | null>(null);
 
   async function requireUser() {
@@ -67,7 +67,6 @@ export default function MomentsPage() {
     setBody("");
     setSelectedFolderId("none");
     setFiles([]);
-    // keep entryDate as-is (nice for journaling)
   }
 
   function startEdit(m: MomentRow) {
@@ -77,7 +76,7 @@ export default function MomentsPage() {
     setBody(m.body ?? "");
     setSelectedFolderId(m.folder_id ?? "none");
     setEntryDate(m.entry_date ?? entryDate);
-    setFiles([]); // editing text doesn’t touch existing photos
+    setFiles([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -187,7 +186,7 @@ export default function MomentsPage() {
     try {
       const user = await requireUser();
 
-      // ✅ EDIT MODE
+      // EDIT
       if (editingId) {
         const { error: updateErr } = await supabase
           .from("moments")
@@ -202,7 +201,7 @@ export default function MomentsPage() {
 
         if (updateErr) throw new Error(updateErr.message);
 
-        // Optional: allow adding new photos while editing (append)
+        // Optional: append new photos while editing
         await uploadPhotos(user.id, editingId, files);
 
         resetFormToCreate();
@@ -210,7 +209,7 @@ export default function MomentsPage() {
         return;
       }
 
-      // ✅ CREATE MODE
+      // CREATE
       const { data: created, error: insertErr } = await supabase
         .from("moments")
         .insert({
@@ -229,6 +228,65 @@ export default function MomentsPage() {
       await uploadPhotos(user.id, momentId, files);
 
       resetFormToCreate();
+      await loadMoments();
+    } catch (e: any) {
+      setError(e?.message ?? "Unknown error");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteMoment(momentId: number) {
+    if (saving) return;
+    setError("");
+
+    const ok = window.confirm(
+      "Delete this moment? This will remove the entry and its photos. This cannot be undone."
+    );
+    if (!ok) return;
+
+    setSaving(true);
+
+    try {
+      const user = await requireUser();
+
+      // 1) Get photo paths so we can remove files
+      const { data: photos, error: photoErr } = await supabase
+        .from("moment_photos")
+        .select("path")
+        .eq("user_id", user.id)
+        .eq("moment_id", momentId);
+
+      if (photoErr) throw new Error(photoErr.message);
+
+      const paths = ((photos as { path: string }[]) ?? []).map((p) => p.path);
+
+      // 2) Delete photo rows
+      const { error: delPhotoRowsErr } = await supabase
+        .from("moment_photos")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("moment_id", momentId);
+
+      if (delPhotoRowsErr) throw new Error(delPhotoRowsErr.message);
+
+      // 3) Delete storage files (best-effort)
+      if (paths.length > 0) {
+        await supabase.storage.from("moment-photos").remove(paths);
+      }
+
+      // 4) Delete the moment row
+      const { error: delMomentErr } = await supabase
+        .from("moments")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("id", momentId);
+
+      if (delMomentErr) throw new Error(delMomentErr.message);
+
+      // If you were editing this moment, exit edit mode
+      if (editingId === momentId) resetFormToCreate();
+
       await loadMoments();
     } catch (e: any) {
       setError(e?.message ?? "Unknown error");
@@ -257,16 +315,10 @@ export default function MomentsPage() {
 
       <div className="space-y-3 border rounded-xl p-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="font-semibold">
-            {editingId ? "Edit entry" : "New entry"}
-          </div>
+          <div className="font-semibold">{editingId ? "Edit entry" : "New entry"}</div>
 
           {editingId && (
-            <button
-              className="underline text-sm"
-              onClick={resetFormToCreate}
-              disabled={saving}
-            >
+            <button className="underline text-sm" onClick={resetFormToCreate} disabled={saving}>
               Cancel edit
             </button>
           )}
@@ -312,9 +364,7 @@ export default function MomentsPage() {
         </select>
 
         <div className="space-y-1">
-          <label className="text-sm opacity-80">
-            Photos {editingId ? "(optional: add more)" : ""}
-          </label>
+          <label className="text-sm opacity-80">Photos {editingId ? "(optional: add more)" : ""}</label>
           <input
             className="border p-2 w-full"
             type="file"
@@ -356,8 +406,15 @@ export default function MomentsPage() {
               )}
 
               <div className="pt-2 flex gap-4">
-                <button className="underline text-sm" onClick={() => startEdit(m)}>
+                <button className="underline text-sm" onClick={() => startEdit(m)} disabled={saving}>
                   Edit
+                </button>
+                <button
+                  className="underline text-sm text-red-600"
+                  onClick={() => deleteMoment(m.id)}
+                  disabled={saving}
+                >
+                  Delete
                 </button>
               </div>
             </div>
