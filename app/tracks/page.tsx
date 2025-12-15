@@ -8,13 +8,26 @@ import { supabaseBrowser } from "../../lib/supabase/browser";
 type CatalogTrack = { id: number; slug: string | null; name: string; country: string | null };
 type UserTrack = { id: number; track_id: number; status: "been" | "want"; created_at: string };
 
+type PopularRow = {
+  track_id: number;
+  slug: string | null;
+  name: string;
+  country: string | null;
+  total_picks: number;
+  want_picks: number;
+  been_picks: number;
+};
+
 export default function TracksPage() {
   const supabase = supabaseBrowser();
+
+  const [tab, setTab] = useState<"browse" | "leaderboard">("browse");
 
   const [catalog, setCatalog] = useState<CatalogTrack[]>([]);
   const [userTracks, setUserTracks] = useState<UserTrack[]>([]);
   const [isAuthed, setIsAuthed] = useState(false);
 
+  const [popular, setPopular] = useState<PopularRow[]>([]);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
@@ -41,6 +54,21 @@ export default function TracksPage() {
       return;
     }
     setCatalog((data as CatalogTrack[]) ?? []);
+  }
+
+  async function loadPopular() {
+    setError("");
+    const { data, error } = await supabase
+      .from("track_popularity")
+      .select("track_id,slug,name,country,total_picks,want_picks,been_picks")
+      .order("total_picks", { ascending: false })
+      .limit(50);
+
+    if (error) {
+      setError(error.message);
+      return;
+    }
+    setPopular((data as PopularRow[]) ?? []);
   }
 
   async function loadUserTracks() {
@@ -87,6 +115,7 @@ export default function TracksPage() {
     }
 
     await loadUserTracks();
+    await loadPopular(); // refresh leaderboard counts
   }
 
   async function removeUserTrack(userTrackId: number) {
@@ -99,7 +128,9 @@ export default function TracksPage() {
 
     const { error } = await supabase.from("user_tracks").delete().eq("id", userTrackId);
     if (error) setError(error.message);
+
     await loadUserTracks();
+    await loadPopular();
   }
 
   const filteredCatalog = useMemo(() => {
@@ -108,12 +139,19 @@ export default function TracksPage() {
     return catalog.filter((t) => t.name.toLowerCase().includes(q));
   }, [catalog, query]);
 
+  const filteredPopular = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return popular;
+    return popular.filter((t) => t.name.toLowerCase().includes(q));
+  }, [popular, query]);
+
   function trackById(trackId: number) {
     return catalog.find((c) => c.id === trackId) ?? null;
   }
 
   useEffect(() => {
     loadCatalog();
+    loadPopular();
     loadUserTracks();
 
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
@@ -130,85 +168,114 @@ export default function TracksPage() {
     <main className="space-y-6">
       <BackHome />
 
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Tracks</h1>
-          <p className="text-sm opacity-70">
-            Browse tracks. Log in to save Want/Been.
-          </p>
-        </div>
-
-        <Link className="underline text-sm" href="/popular-tracks">
-          View Popular
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold">Tracks</h1>
+        <p className="text-sm opacity-70">Browse as a guest. Log in to save Want/Been.</p>
       </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <section className="border rounded-xl p-4 space-y-3">
-        <div className="font-semibold">Browse tracks</div>
+      <div className="border rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex gap-3">
+            <button
+              className={`border px-3 py-1 rounded ${tab === "browse" ? "border-red-600 text-red-600" : ""}`}
+              onClick={() => setTab("browse")}
+            >
+              Browse
+            </button>
+            <button
+              className={`border px-3 py-1 rounded ${tab === "leaderboard" ? "border-red-600 text-red-600" : ""}`}
+              onClick={() => setTab("leaderboard")}
+            >
+              Leaderboard
+            </button>
+          </div>
 
-        <input
-          className="border p-2 w-full"
-          placeholder="Search all tracks (e.g. Silverstone)"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-
-        <div className="border max-h-72 overflow-y-auto rounded-md">
-          {filteredCatalog.map((t) => (
-            <div key={t.id} className="flex items-center justify-between px-3 py-2 border-b">
-              {t.slug ? (
-                <Link className="underline" href={`/tracks/${t.slug}`}>
-                  {t.name}
-                  {t.country ? ` — ${t.country}` : ""}
-                </Link>
-              ) : (
-                <span className="text-sm text-red-600">Missing slug for: {t.name}</span>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  className={`underline ${!isAuthed ? "opacity-50" : ""}`}
-                  onClick={() => setStatus(t.id, "want")}
-                  title={!isAuthed ? "Log in to save" : ""}
-                >
-                  Want
-                </button>
-                <button
-                  className={`underline ${!isAuthed ? "opacity-50" : ""}`}
-                  onClick={() => setStatus(t.id, "been")}
-                  title={!isAuthed ? "Log in to save" : ""}
-                >
-                  Been
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {filteredCatalog.length === 0 && (
-            <div className="p-3 text-sm opacity-70">No matching tracks</div>
-          )}
+          <input
+            className="border p-2 w-full max-w-sm"
+            placeholder="Search (e.g. Silverstone)"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
+
+        {tab === "browse" ? (
+          <div className="border max-h-72 overflow-y-auto rounded-md">
+            {filteredCatalog.map((t) => (
+              <div key={t.id} className="flex items-center justify-between px-3 py-2 border-b">
+                {t.slug ? (
+                  <Link className="underline" href={`/tracks/${t.slug}`}>
+                    {t.name}{t.country ? ` — ${t.country}` : ""}
+                  </Link>
+                ) : (
+                  <span className="text-sm text-red-600">Missing slug for: {t.name}</span>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    className={`underline ${!isAuthed ? "opacity-50" : ""}`}
+                    onClick={() => setStatus(t.id, "want")}
+                    title={!isAuthed ? "Log in to save" : ""}
+                  >
+                    Want
+                  </button>
+                  <button
+                    className={`underline ${!isAuthed ? "opacity-50" : ""}`}
+                    onClick={() => setStatus(t.id, "been")}
+                    title={!isAuthed ? "Log in to save" : ""}
+                  >
+                    Been
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {filteredCatalog.length === 0 && (
+              <div className="p-3 text-sm opacity-70">No matching tracks</div>
+            )}
+          </div>
+        ) : (
+          <div className="border rounded-md overflow-hidden">
+            {filteredPopular.map((r, i) => (
+              <div key={r.track_id} className="border-b p-3">
+                <div className="font-semibold">
+                  {r.slug ? (
+                    <Link className="underline" href={`/tracks/${r.slug}`}>
+                      #{i + 1} {r.name} {r.country ? `— ${r.country}` : ""}
+                    </Link>
+                  ) : (
+                    <span className="text-red-600">Missing slug for {r.name}</span>
+                  )}
+                </div>
+                <div className="text-sm opacity-80">
+                  Total: {r.total_picks} • Want: {r.want_picks} • Been: {r.been_picks}
+                </div>
+              </div>
+            ))}
+
+            {filteredPopular.length === 0 && (
+              <div className="p-3 text-sm opacity-70">No matching tracks</div>
+            )}
+          </div>
+        )}
 
         {!isAuthed && (
           <div className="text-sm opacity-70">
-            You’re browsing as a guest.{" "}
+            Want/Been requires{" "}
             <Link className="underline" href="/login">
-              Log in
-            </Link>{" "}
-            to save Want/Been.
+              login
+            </Link>
+            .
           </div>
         )}
-      </section>
+      </div>
 
       <section className="space-y-2">
         <div className="font-semibold">Your list</div>
 
         {!isAuthed ? (
-          <p className="opacity-70">
-            Log in to see your Want/Been list.
-          </p>
+          <p className="opacity-70">Log in to see your Want/Been list.</p>
         ) : (
           <>
             {userTracks.map((ut) => {
@@ -218,8 +285,7 @@ export default function TracksPage() {
                   <div>
                     {t?.slug ? (
                       <Link className="underline" href={`/tracks/${t.slug}`}>
-                        {t.name}
-                        {t.country ? ` — ${t.country}` : ""}
+                        {t.name}{t.country ? ` — ${t.country}` : ""}
                       </Link>
                     ) : (
                       <span className="text-sm text-red-600">Missing slug</span>
