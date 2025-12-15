@@ -14,14 +14,21 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // If already logged in, don’t stay on login page
+  // Redirect if already logged in
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) router.replace("/");
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
         router.replace("/");
       }
-    })();
+    });
+
+    return () => {
+      sub.subscription.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -34,15 +41,15 @@ export default function LoginPage() {
       password,
     });
 
-    setLoading(false);
-
     if (error) {
       setError(error.message);
+      setLoading(false);
       return;
     }
 
-    // ✅ SUCCESS → redirect immediately
-    router.push("/");
+    // IMPORTANT:
+    // Do NOT redirect here.
+    // Let onAuthStateChange handle it.
   }
 
   return (
@@ -76,7 +83,6 @@ export default function LoginPage() {
         {error && <p className="text-red-600 text-sm">{error}</p>}
       </div>
 
-      {/* ✅ Clear signup link */}
       <p className="text-sm opacity-80">
         Don’t have an account?{" "}
         <Link href="/signup" className="underline">
