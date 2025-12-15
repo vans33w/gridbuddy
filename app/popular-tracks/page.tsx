@@ -22,11 +22,6 @@ export default function PopularTracksPage() {
 
   async function load() {
     setError("");
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      window.location.href = "/login";
-      return;
-    }
 
     const { data, error } = await supabase
       .from("track_popularity")
@@ -47,16 +42,21 @@ export default function PopularTracksPage() {
   }, []);
 
   return (
-    <main className="p-6 space-y-4 max-w-2xl">
+    <main className="space-y-4">
       <BackHome />
 
-      <h1 className="text-2xl font-bold">Most Popular Tracks</h1>
+      <div className="flex items-end justify-between gap-4">
+        <h1 className="text-2xl font-bold">Most Popular Tracks</h1>
+        <Link className="underline text-sm" href="/tracks">
+          Back to Tracks
+        </Link>
+      </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <div className="space-y-2">
         {rows.map((r, i) => (
-          <div key={r.track_id} className="border p-3">
+          <div key={r.track_id} className="border rounded-xl p-3">
             <div className="font-semibold">
               {r.slug ? (
                 <Link className="underline" href={`/tracks/${r.slug}`}>
