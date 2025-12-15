@@ -48,6 +48,9 @@ export default function MomentsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  // ✅ edit state
+  const [editingId, setEditingId] = useState<number | null>(null);
+
   async function requireUser() {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw new Error(error.message);
@@ -56,6 +59,26 @@ export default function MomentsPage() {
       throw new Error("Not logged in");
     }
     return data.user;
+  }
+
+  function resetFormToCreate() {
+    setEditingId(null);
+    setTitle("");
+    setBody("");
+    setSelectedFolderId("none");
+    setFiles([]);
+    // keep entryDate as-is (nice for journaling)
+  }
+
+  function startEdit(m: MomentRow) {
+    setError("");
+    setEditingId(m.id);
+    setTitle(m.title ?? "");
+    setBody(m.body ?? "");
+    setSelectedFolderId(m.folder_id ?? "none");
+    setEntryDate(m.entry_date ?? entryDate);
+    setFiles([]); // editing text doesn’t touch existing photos
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   async function loadFolders() {
@@ -164,6 +187,30 @@ export default function MomentsPage() {
     try {
       const user = await requireUser();
 
+      // ✅ EDIT MODE
+      if (editingId) {
+        const { error: updateErr } = await supabase
+          .from("moments")
+          .update({
+            folder_id: selectedFolderId === "none" ? null : selectedFolderId,
+            title: title || null,
+            body: body || null,
+            entry_date: entryDate || null,
+          })
+          .eq("id", editingId)
+          .eq("user_id", user.id);
+
+        if (updateErr) throw new Error(updateErr.message);
+
+        // Optional: allow adding new photos while editing (append)
+        await uploadPhotos(user.id, editingId, files);
+
+        resetFormToCreate();
+        await loadMoments();
+        return;
+      }
+
+      // ✅ CREATE MODE
       const { data: created, error: insertErr } = await supabase
         .from("moments")
         .insert({
@@ -181,10 +228,7 @@ export default function MomentsPage() {
 
       await uploadPhotos(user.id, momentId, files);
 
-      setTitle("");
-      setBody("");
-      setFiles([]);
-      setSelectedFolderId("none");
+      resetFormToCreate();
       await loadMoments();
     } catch (e: any) {
       setError(e?.message ?? "Unknown error");
@@ -194,10 +238,10 @@ export default function MomentsPage() {
   }
 
   const fileLabel = useMemo(() => {
-    if (files.length === 0) return "No photos selected";
+    if (files.length === 0) return editingId ? "No new photos selected" : "No photos selected";
     if (files.length === 1) return files[0].name;
     return `${files.length} photos selected`;
-  }, [files]);
+  }, [files, editingId]);
 
   useEffect(() => {
     loadFolders();
@@ -206,12 +250,28 @@ export default function MomentsPage() {
   }, []);
 
   return (
-    <main className="p-6 space-y-4 max-w-2xl">
+    <main className="space-y-4">
       <BackHome />
 
       <h1 className="text-2xl font-bold">Moments</h1>
 
-      <div className="space-y-3 border p-4">
+      <div className="space-y-3 border rounded-xl p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="font-semibold">
+            {editingId ? "Edit entry" : "New entry"}
+          </div>
+
+          {editingId && (
+            <button
+              className="underline text-sm"
+              onClick={resetFormToCreate}
+              disabled={saving}
+            >
+              Cancel edit
+            </button>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 gap-2">
           <label className="text-sm opacity-80">Entry date</label>
           <input
@@ -252,7 +312,9 @@ export default function MomentsPage() {
         </select>
 
         <div className="space-y-1">
-          <label className="text-sm opacity-80">Photos</label>
+          <label className="text-sm opacity-80">
+            Photos {editingId ? "(optional: add more)" : ""}
+          </label>
           <input
             className="border p-2 w-full"
             type="file"
@@ -264,7 +326,7 @@ export default function MomentsPage() {
         </div>
 
         <button className="border px-4 py-2" onClick={saveMoment} disabled={saving}>
-          {saving ? "Saving..." : "Save entry"}
+          {saving ? "Saving..." : editingId ? "Save changes" : "Save entry"}
         </button>
 
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -274,7 +336,7 @@ export default function MomentsPage() {
         {moments.map((m) => {
           const urls = photoUrlsByMoment[m.id] ?? [];
           return (
-            <div key={m.id} className="border p-4 space-y-2">
+            <div key={m.id} className="border rounded-xl p-4 space-y-2">
               <div className="flex items-baseline justify-between gap-4">
                 <div className="font-semibold">{m.title ?? "Untitled"}</div>
                 <div className="text-xs opacity-60">
@@ -292,6 +354,12 @@ export default function MomentsPage() {
                   ))}
                 </div>
               )}
+
+              <div className="pt-2 flex gap-4">
+                <button className="underline text-sm" onClick={() => startEdit(m)}>
+                  Edit
+                </button>
+              </div>
             </div>
           );
         })}
