@@ -21,22 +21,33 @@ type PopularRow = {
 export default function TracksPage() {
   const supabase = supabaseBrowser();
 
-  const [tab, setTab] = useState<"browse" | "leaderboard">("browse");
-
   const [catalog, setCatalog] = useState<CatalogTrack[]>([]);
   const [userTracks, setUserTracks] = useState<UserTrack[]>([]);
+  const [popularTop5, setPopularTop5] = useState<PopularRow[]>([]);
   const [isAuthed, setIsAuthed] = useState(false);
 
-  const [popular, setPopular] = useState<PopularRow[]>([]);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
+  function isAuthMissingError(e: any) {
+    const msg = String(e?.message ?? "").toLowerCase();
+    return msg.includes("auth session missing");
+  }
+
   async function getUserId(): Promise<string | null> {
     const { data, error } = await supabase.auth.getUser();
+
+    // Guests often get "Auth session missing!" -> treat as logged out, not an error.
     if (error) {
+      if (isAuthMissingError(error)) {
+        setIsAuthed(false);
+        return null;
+      }
       setError(error.message);
+      setIsAuthed(false);
       return null;
     }
+
     const uid = data.user?.id ?? null;
     setIsAuthed(Boolean(uid));
     return uid;
@@ -56,23 +67,23 @@ export default function TracksPage() {
     setCatalog((data as CatalogTrack[]) ?? []);
   }
 
-  async function loadPopular() {
-    setError("");
+  async function loadTop5() {
+    // Do NOT clear error here; it can hide real problems from other actions.
     const { data, error } = await supabase
       .from("track_popularity")
       .select("track_id,slug,name,country,total_picks,want_picks,been_picks")
       .order("total_picks", { ascending: false })
-      .limit(50);
+      .limit(5);
 
     if (error) {
       setError(error.message);
       return;
     }
-    setPopular((data as PopularRow[]) ?? []);
+    setPopularTop5((data as PopularRow[]) ?? []);
   }
 
   async function loadUserTracks() {
-    setError("");
+    // Don’t setError("") here — guests would briefly flash errors.
     const uid = await getUserId();
     if (!uid) {
       setUserTracks([]);
@@ -115,7 +126,7 @@ export default function TracksPage() {
     }
 
     await loadUserTracks();
-    await loadPopular(); // refresh leaderboard counts
+    await loadTop5();
   }
 
   async function removeUserTrack(userTrackId: number) {
@@ -130,7 +141,7 @@ export default function TracksPage() {
     if (error) setError(error.message);
 
     await loadUserTracks();
-    await loadPopular();
+    await loadTop5();
   }
 
   const filteredCatalog = useMemo(() => {
@@ -139,19 +150,13 @@ export default function TracksPage() {
     return catalog.filter((t) => t.name.toLowerCase().includes(q));
   }, [catalog, query]);
 
-  const filteredPopular = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return popular;
-    return popular.filter((t) => t.name.toLowerCase().includes(q));
-  }, [popular, query]);
-
   function trackById(trackId: number) {
     return catalog.find((c) => c.id === trackId) ?? null;
   }
 
   useEffect(() => {
     loadCatalog();
-    loadPopular();
+    loadTop5();
     loadUserTracks();
 
     const { data: sub } = supabase.auth.onAuthStateChange(() => {
@@ -173,92 +178,83 @@ export default function TracksPage() {
         <p className="text-sm opacity-70">Browse as a guest. Log in to save Want/Been.</p>
       </div>
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {/* Hide the annoying guest auth error if it ever sneaks in */}
+      {error && !error.toLowerCase().includes("auth session missing") && (
+        <p className="text-red-600 text-sm">{error}</p>
+      )}
 
-      <div className="border rounded-xl p-4 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex gap-3">
-            <button
-              className={`border px-3 py-1 rounded ${tab === "browse" ? "border-red-600 text-red-600" : ""}`}
-              onClick={() => setTab("browse")}
-            >
-              Browse
-            </button>
-            <button
-              className={`border px-3 py-1 rounded ${tab === "leaderboard" ? "border-red-600 text-red-600" : ""}`}
-              onClick={() => setTab("leaderboard")}
-            >
-              Leaderboard
-            </button>
-          </div>
+      <section className="border rounded-xl p-4 space-y-3">
+        <div className="font-semibold">Top 5 Popular Tracks</div>
 
-          <input
-            className="border p-2 w-full max-w-sm"
-            placeholder="Search (e.g. Silverstone)"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
-
-        {tab === "browse" ? (
-          <div className="border max-h-72 overflow-y-auto rounded-md">
-            {filteredCatalog.map((t) => (
-              <div key={t.id} className="flex items-center justify-between px-3 py-2 border-b">
-                {t.slug ? (
-                  <Link className="underline" href={`/tracks/${t.slug}`}>
-                    {t.name}{t.country ? ` — ${t.country}` : ""}
+        <div className="space-y-2">
+          {popularTop5.map((r, i) => (
+            <div key={r.track_id} className="border rounded-lg p-3">
+              <div className="font-semibold">
+                {r.slug ? (
+                  <Link className="underline" href={`/tracks/${r.slug}`}>
+                    #{i + 1} {r.name} {r.country ? `— ${r.country}` : ""}
                   </Link>
                 ) : (
-                  <span className="text-sm text-red-600">Missing slug for: {t.name}</span>
+                  <span className="text-red-600">Missing slug for {r.name}</span>
                 )}
-
-                <div className="flex gap-3">
-                  <button
-                    className={`underline ${!isAuthed ? "opacity-50" : ""}`}
-                    onClick={() => setStatus(t.id, "want")}
-                    title={!isAuthed ? "Log in to save" : ""}
-                  >
-                    Want
-                  </button>
-                  <button
-                    className={`underline ${!isAuthed ? "opacity-50" : ""}`}
-                    onClick={() => setStatus(t.id, "been")}
-                    title={!isAuthed ? "Log in to save" : ""}
-                  >
-                    Been
-                  </button>
-                </div>
               </div>
-            ))}
-
-            {filteredCatalog.length === 0 && (
-              <div className="p-3 text-sm opacity-70">No matching tracks</div>
-            )}
-          </div>
-        ) : (
-          <div className="border rounded-md overflow-hidden">
-            {filteredPopular.map((r, i) => (
-              <div key={r.track_id} className="border-b p-3">
-                <div className="font-semibold">
-                  {r.slug ? (
-                    <Link className="underline" href={`/tracks/${r.slug}`}>
-                      #{i + 1} {r.name} {r.country ? `— ${r.country}` : ""}
-                    </Link>
-                  ) : (
-                    <span className="text-red-600">Missing slug for {r.name}</span>
-                  )}
-                </div>
-                <div className="text-sm opacity-80">
-                  Total: {r.total_picks} • Want: {r.want_picks} • Been: {r.been_picks}
-                </div>
+              <div className="text-sm opacity-80">
+                Total: {r.total_picks} • Want: {r.want_picks} • Been: {r.been_picks}
               </div>
-            ))}
+            </div>
+          ))}
 
-            {filteredPopular.length === 0 && (
-              <div className="p-3 text-sm opacity-70">No matching tracks</div>
-            )}
-          </div>
-        )}
+          {popularTop5.length === 0 && (
+            <div className="text-sm opacity-70">No popularity data yet.</div>
+          )}
+        </div>
+      </section>
+
+      <section className="border rounded-xl p-4 space-y-3">
+        <div className="font-semibold">Browse all tracks</div>
+
+        <input
+          className="border p-2 w-full"
+          placeholder="Search (e.g. Silverstone)"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+
+        <div className="border max-h-72 overflow-y-auto rounded-md">
+          {filteredCatalog.map((t) => (
+            <div key={t.id} className="flex items-center justify-between px-3 py-2 border-b">
+              {t.slug ? (
+                <Link className="underline" href={`/tracks/${t.slug}`}>
+                  {t.name}
+                  {t.country ? ` — ${t.country}` : ""}
+                </Link>
+              ) : (
+                <span className="text-sm text-red-600">Missing slug for: {t.name}</span>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  className={`underline ${!isAuthed ? "opacity-50" : ""}`}
+                  onClick={() => setStatus(t.id, "want")}
+                  title={!isAuthed ? "Log in to save" : ""}
+                >
+                  Want
+                </button>
+                <button
+                  className={`underline ${!isAuthed ? "opacity-50" : ""}`}
+                  onClick={() => setStatus(t.id, "been")}
+                  title={!isAuthed ? "Log in to save" : ""}
+                >
+                  Been
+                </button>
+              </div>
+            </div>
+          ))}
+
+          {filteredCatalog.length === 0 && (
+            <div className="p-3 text-sm opacity-70">No matching tracks</div>
+          )}
+        </div>
 
         {!isAuthed && (
           <div className="text-sm opacity-70">
@@ -269,7 +265,7 @@ export default function TracksPage() {
             .
           </div>
         )}
-      </div>
+      </section>
 
       <section className="space-y-2">
         <div className="font-semibold">Your list</div>
@@ -285,7 +281,8 @@ export default function TracksPage() {
                   <div>
                     {t?.slug ? (
                       <Link className="underline" href={`/tracks/${t.slug}`}>
-                        {t.name}{t.country ? ` — ${t.country}` : ""}
+                        {t.name}
+                        {t.country ? ` — ${t.country}` : ""}
                       </Link>
                     ) : (
                       <span className="text-sm text-red-600">Missing slug</span>
