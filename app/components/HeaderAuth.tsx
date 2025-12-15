@@ -2,36 +2,31 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 
 export default function HeaderAuth() {
   const supabase = supabaseBrowser();
-  const router = useRouter();
   const pathname = usePathname();
 
   const [email, setEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  async function refreshUser() {
+    setLoading(true);
+    const { data } = await supabase.auth.getUser();
+    setEmail(data.user?.email ?? null);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    let alive = true;
+    refreshUser();
 
-    async function load() {
-      const { data } = await supabase.auth.getUser();
-      if (!alive) return;
-      setEmail(data.user?.email ?? null);
-    }
-
-    load();
-
-    const { data: sub } = supabase.auth.onAuthStateChange(async () => {
-      const { data } = await supabase.auth.getUser();
-      if (!alive) return;
-      setEmail(data.user?.email ?? null);
-      router.refresh();
+    const { data: sub } = supabase.auth.onAuthStateChange(() => {
+      refreshUser();
     });
 
     return () => {
-      alive = false;
       sub.subscription.unsubscribe();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -40,9 +35,12 @@ export default function HeaderAuth() {
   async function logout() {
     await supabase.auth.signOut();
     setEmail(null);
-    router.push("/");
-    router.refresh();
+
+    // ✅ Guaranteed update: full reload to a logged-out state
+    window.location.href = "/";
   }
+
+  if (loading) return <div className="text-xs opacity-60">Checking…</div>;
 
   if (!email) {
     return (
