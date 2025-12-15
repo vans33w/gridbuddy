@@ -49,9 +49,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
 
         <footer className="border-t mt-16">
-          <div className="mx-auto max-w-5xl px-6 py-6 text-xs text-neutral-500 flex justify-between">
-            <span>© {new Date().getFullYear()} Grid Buddy</span>
-            <span className="text-red-600 font-medium">Motorsport-first journaling</span>
+          <div className="mx-auto max-w-5xl px-6 py-6 text-xs text-neutral-500">
+            © {new Date().getFullYear()} Grid Buddy
           </div>
         </footer>
       </body>
