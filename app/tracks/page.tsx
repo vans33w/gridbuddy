@@ -29,17 +29,13 @@ export default function TracksPage() {
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
-  function isAuthMissingError(e: any) {
-    const msg = String(e?.message ?? "").toLowerCase();
-    return msg.includes("auth session missing");
-  }
-
   async function getUserId(): Promise<string | null> {
     const { data, error } = await supabase.auth.getUser();
 
     // Guests often get "Auth session missing!" -> treat as logged out, not an error.
     if (error) {
-      if (isAuthMissingError(error)) {
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("auth session missing")) {
         setIsAuthed(false);
         return null;
       }
@@ -68,7 +64,7 @@ export default function TracksPage() {
   }
 
   async function loadTop5() {
-    // Do NOT clear error here; it can hide real problems from other actions.
+    setError("");
     const { data, error } = await supabase
       .from("track_popularity")
       .select("track_id,slug,name,country,total_picks,want_picks,been_picks")
@@ -83,7 +79,7 @@ export default function TracksPage() {
   }
 
   async function loadUserTracks() {
-    // Don’t setError("") here — guests would briefly flash errors.
+    setError("");
     const uid = await getUserId();
     if (!uid) {
       setUserTracks([]);
@@ -163,9 +159,7 @@ export default function TracksPage() {
       loadUserTracks();
     });
 
-    return () => {
-      sub.subscription.unsubscribe();
-    };
+    return () => sub.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -178,10 +172,7 @@ export default function TracksPage() {
         <p className="text-sm opacity-70">Browse as a guest. Log in to save Want/Been.</p>
       </div>
 
-      {/* Hide the annoying guest auth error if it ever sneaks in */}
-      {error && !error.toLowerCase().includes("auth session missing") && (
-        <p className="text-red-600 text-sm">{error}</p>
-      )}
+      {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <section className="border rounded-xl p-4 space-y-3">
         <div className="font-semibold">Top 5 Popular Tracks</div>
@@ -204,9 +195,7 @@ export default function TracksPage() {
             </div>
           ))}
 
-          {popularTop5.length === 0 && (
-            <div className="text-sm opacity-70">No popularity data yet.</div>
-          )}
+          {popularTop5.length === 0 && <div className="text-sm opacity-70">No popularity data yet.</div>}
         </div>
       </section>
 
@@ -251,18 +240,12 @@ export default function TracksPage() {
             </div>
           ))}
 
-          {filteredCatalog.length === 0 && (
-            <div className="p-3 text-sm opacity-70">No matching tracks</div>
-          )}
+          {filteredCatalog.length === 0 && <div className="p-3 text-sm opacity-70">No matching tracks</div>}
         </div>
 
         {!isAuthed && (
           <div className="text-sm opacity-70">
-            Want/Been requires{" "}
-            <Link className="underline" href="/login">
-              login
-            </Link>
-            .
+            Want/Been requires <Link className="underline" href="/login">login</Link>.
           </div>
         )}
       </section>
@@ -277,8 +260,8 @@ export default function TracksPage() {
             {userTracks.map((ut) => {
               const t = trackById(ut.track_id);
               return (
-                <div key={ut.id} className="border rounded-xl p-3 flex justify-between">
-                  <div>
+                <div key={ut.id} className="border rounded-xl p-3 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
                     {t?.slug ? (
                       <Link className="underline" href={`/tracks/${t.slug}`}>
                         {t.name}
@@ -286,12 +269,25 @@ export default function TracksPage() {
                       </Link>
                     ) : (
                       <span className="text-sm text-red-600">Missing slug</span>
-                    )}{" "}
-                    — <span className="opacity-70">{ut.status}</span>
+                    )}
+                    <span className="opacity-70"> — {ut.status}</span>
                   </div>
-                  <button className="underline" onClick={() => removeUserTrack(ut.id)}>
-                    Remove
-                  </button>
+
+                  <div className="flex gap-3 shrink-0">
+                    {ut.status !== "want" && (
+                      <button className="underline" onClick={() => setStatus(ut.track_id, "want")}>
+                        Mark Want
+                      </button>
+                    )}
+                    {ut.status !== "been" && (
+                      <button className="underline" onClick={() => setStatus(ut.track_id, "been")}>
+                        Mark Been
+                      </button>
+                    )}
+                    <button className="underline" onClick={() => removeUserTrack(ut.id)}>
+                      Remove
+                    </button>
+                  </div>
                 </div>
               );
             })}
