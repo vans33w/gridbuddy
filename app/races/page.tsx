@@ -5,30 +5,14 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 
-type CatalogRace = {
-  id: number;
-  slug: string | null;
-  name: string;
-  country: string | null;
-  season: number | null;
-  round: number | null;
-  race_date: string | null; // YYYY-MM-DD
-};
-
-type UserRace = {
-  id: number;
-  race_id: number;
-  status: "been" | "want";
-  created_at: string;
-};
+type CatalogRace = { id: number; slug: string | null; name: string; country: string | null };
+type UserRace = { id: number; race_id: number; status: "been" | "want"; created_at: string };
 
 type PopularRow = {
   race_id: number;
   slug: string | null;
   name: string;
   country: string | null;
-  season: number | null;
-  round: number | null;
   total_picks: number;
   want_picks: number;
   been_picks: number;
@@ -39,22 +23,18 @@ export default function RacesPage() {
 
   const [catalog, setCatalog] = useState<CatalogRace[]>([]);
   const [userRaces, setUserRaces] = useState<UserRace[]>([]);
-  const [top5, setTop5] = useState<PopularRow[]>([]);
+  const [popularTop5, setPopularTop5] = useState<PopularRow[]>([]);
   const [isAuthed, setIsAuthed] = useState(false);
 
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
 
-  function isAuthMissingError(e: any) {
-    const msg = String(e?.message ?? "").toLowerCase();
-    return msg.includes("auth session missing");
-  }
-
   async function getUserId(): Promise<string | null> {
     const { data, error } = await supabase.auth.getUser();
 
     if (error) {
-      if (isAuthMissingError(error)) {
+      const msg = (error.message || "").toLowerCase();
+      if (msg.includes("auth session missing")) {
         setIsAuthed(false);
         return null;
       }
@@ -72,9 +52,8 @@ export default function RacesPage() {
     setError("");
     const { data, error } = await supabase
       .from("races_catalog")
-      .select("id,slug,name,country,season,round,race_date")
-      .order("season", { ascending: false })
-      .order("round", { ascending: true });
+      .select("id,slug,name,country")
+      .order("name");
 
     if (error) {
       setError(error.message);
@@ -84,9 +63,10 @@ export default function RacesPage() {
   }
 
   async function loadTop5() {
+    setError("");
     const { data, error } = await supabase
       .from("race_popularity")
-      .select("race_id,slug,name,country,season,round,total_picks,want_picks,been_picks")
+      .select("race_id,slug,name,country,total_picks,want_picks,been_picks")
       .order("total_picks", { ascending: false })
       .limit(5);
 
@@ -94,10 +74,11 @@ export default function RacesPage() {
       setError(error.message);
       return;
     }
-    setTop5((data as PopularRow[]) ?? []);
+    setPopularTop5((data as PopularRow[]) ?? []);
   }
 
   async function loadUserRaces() {
+    setError("");
     const uid = await getUserId();
     if (!uid) {
       setUserRaces([]);
@@ -177,7 +158,9 @@ export default function RacesPage() {
       loadUserRaces();
     });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      sub.subscription.unsubscribe();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -190,15 +173,13 @@ export default function RacesPage() {
         <p className="text-sm opacity-70">Browse as a guest. Log in to save Want/Been.</p>
       </div>
 
-      {error && !error.toLowerCase().includes("auth session missing") && (
-        <p className="text-red-600 text-sm">{error}</p>
-      )}
+      {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <section className="border rounded-xl p-4 space-y-3">
         <div className="font-semibold">Top 5 Popular Races</div>
 
         <div className="space-y-2">
-          {top5.map((r, i) => (
+          {popularTop5.map((r, i) => (
             <div key={r.race_id} className="border rounded-lg p-3">
               <div className="font-semibold">
                 {r.slug ? (
@@ -214,7 +195,8 @@ export default function RacesPage() {
               </div>
             </div>
           ))}
-          {top5.length === 0 && <div className="text-sm opacity-70">No popularity data yet.</div>}
+
+          {popularTop5.length === 0 && <div className="text-sm opacity-70">No popularity data yet.</div>}
         </div>
       </section>
 
@@ -223,7 +205,7 @@ export default function RacesPage() {
 
         <input
           className="border p-2 w-full"
-          placeholder="Search (e.g. Bahrain Grand Prix)"
+          placeholder="Search (e.g. Monaco GP)"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -231,22 +213,16 @@ export default function RacesPage() {
         <div className="border max-h-72 overflow-y-auto rounded-md">
           {filteredCatalog.map((r) => (
             <div key={r.id} className="flex items-center justify-between px-3 py-2 border-b">
-              <div className="min-w-0">
-                {r.slug ? (
-                  <Link className="underline" href={`/races/${r.slug}`}>
-                    {r.name}
-                  </Link>
-                ) : (
-                  <span className="text-sm text-red-600">Missing slug for: {r.name}</span>
-                )}
-                <div className="text-xs opacity-70">
-                  {r.season ? `Season ${r.season}` : "—"}
-                  {r.round ? ` • Round ${r.round}` : ""}
-                  {r.race_date ? ` • ${r.race_date}` : ""}
-                </div>
-              </div>
+              {r.slug ? (
+                <Link className="underline" href={`/races/${r.slug}`}>
+                  {r.name}
+                  {r.country ? ` — ${r.country}` : ""}
+                </Link>
+              ) : (
+                <span className="text-sm text-red-600">Missing slug for: {r.name}</span>
+              )}
 
-              <div className="flex gap-3 shrink-0">
+              <div className="flex gap-3">
                 <button
                   className={`underline ${!isAuthed ? "opacity-50" : ""}`}
                   onClick={() => setStatus(r.id, "want")}
@@ -285,20 +261,34 @@ export default function RacesPage() {
             {userRaces.map((ur) => {
               const r = raceById(ur.race_id);
               return (
-                <div key={ur.id} className="border rounded-xl p-3 flex justify-between">
-                  <div>
+                <div key={ur.id} className="border rounded-xl p-3 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
                     {r?.slug ? (
                       <Link className="underline" href={`/races/${r.slug}`}>
                         {r.name}
+                        {r.country ? ` — ${r.country}` : ""}
                       </Link>
                     ) : (
                       <span className="text-sm text-red-600">Missing slug</span>
-                    )}{" "}
-                    — <span className="opacity-70">{ur.status}</span>
+                    )}
+                    <span className="opacity-70"> — {ur.status}</span>
                   </div>
-                  <button className="underline" onClick={() => removeUserRace(ur.id)}>
-                    Remove
-                  </button>
+
+                  <div className="flex gap-3 shrink-0">
+                    {ur.status !== "want" && (
+                      <button className="underline" onClick={() => setStatus(ur.race_id, "want")}>
+                        Mark Want
+                      </button>
+                    )}
+                    {ur.status !== "been" && (
+                      <button className="underline" onClick={() => setStatus(ur.race_id, "been")}>
+                        Mark Been
+                      </button>
+                    )}
+                    <button className="underline" onClick={() => removeUserRace(ur.id)}>
+                      Remove
+                    </button>
+                  </div>
                 </div>
               );
             })}
