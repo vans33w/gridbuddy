@@ -27,32 +27,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       >
         <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
           <div className="mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">
-            <Link
-              href="/"
-              className="font-bold text-lg tracking-tight text-red-600"
-            >
+            <Link href="/" className="font-bold text-lg tracking-tight text-red-600">
               Grid Buddy
             </Link>
 
             <div className="flex items-center gap-6">
-              <nav className="flex gap-5 text-sm font-medium">
-                <Link
-                  href="/moments"
-                  className="hover:text-red-600 transition-colors"
-                >
+              <nav className="flex flex-wrap gap-5 text-sm font-medium">
+                <Link href="/moments" className="hover:text-red-600 transition-colors">
                   Moments
                 </Link>
-                <Link
-                  href="/tracks"
-                  className="hover:text-red-600 transition-colors"
-                >
+                <Link href="/tracks" className="hover:text-red-600 transition-colors">
                   Tracks
                 </Link>
-                <Link
-                  href="/races"
-                  className="hover:text-red-600 transition-colors"
-                >
+                <Link href="/races" className="hover:text-red-600 transition-colors">
                   Races
+                </Link>
+                <Link href="/bucket-list" className="hover:text-red-600 transition-colors">
+                  My Bucket List
                 </Link>
               </nav>
 
