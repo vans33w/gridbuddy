@@ -19,6 +19,9 @@ export default function HomePage() {
           <Link className="underline" href="/races">
             Races
           </Link>
+          <Link className="underline" href="/bucket-list">
+            My Bucket List
+          </Link>
         </div>
       </div>
     </main>
