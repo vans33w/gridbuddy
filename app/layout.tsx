@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import HeaderAuth from "./components/HeaderAuth";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,8 +34,9 @@ export default function RootLayout({
           <div className="mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">
             <Link
               href="/"
-              className="font-bold text-lg tracking-tight text-red-600 hover:text-red-700 transition-colors"
+              className="font-bold text-lg tracking-tight text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
             >
+              <Image src="/logo.png" alt="Grid Buddy" width={32} height={32} />
               Grid Buddy
             </Link>
 
