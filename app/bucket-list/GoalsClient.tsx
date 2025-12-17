@@ -11,7 +11,11 @@ type GoalRow = {
   achieved_at: string | null;
 };
 
-export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] }) {
+export default function GoalsClient({
+  initialGoals,
+}: {
+  initialGoals: GoalRow[];
+}) {
   const supabase = supabaseBrowser();
 
   const [goals, setGoals] = useState<GoalRow[]>(initialGoals ?? []);
@@ -20,7 +24,9 @@ export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] 
   const [error, setError] = useState("");
 
   function isAuthMissingError(e: any) {
-    return String(e?.message ?? "").toLowerCase().includes("auth session missing");
+    return String(e?.message ?? "")
+      .toLowerCase()
+      .includes("auth session missing");
   }
 
   async function requireUserId(): Promise<string> {
@@ -80,7 +86,10 @@ export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] 
     }
   }
 
-  async function setGoalStatus(goalId: number, next: "in_progress" | "achieved") {
+  async function setGoalStatus(
+    goalId: number,
+    next: "in_progress" | "achieved"
+  ) {
     setBusy(true);
     setError("");
     try {
@@ -91,7 +100,10 @@ export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] 
           ? { status: "achieved", achieved_at: new Date().toISOString() }
           : { status: "in_progress", achieved_at: null };
 
-      const { error } = await supabase.from("goals").update(patch).eq("id", goalId);
+      const { error } = await supabase
+        .from("goals")
+        .update(patch)
+        .eq("id", goalId);
       if (error) throw new Error(error.message);
 
       await reloadGoals();
@@ -119,8 +131,14 @@ export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] 
     }
   }
 
-  const inProgress = useMemo(() => goals.filter((g) => g.status === "in_progress"), [goals]);
-  const achieved = useMemo(() => goals.filter((g) => g.status === "achieved"), [goals]);
+  const inProgress = useMemo(
+    () => goals.filter((g) => g.status === "in_progress"),
+    [goals]
+  );
+  const achieved = useMemo(
+    () => goals.filter((g) => g.status === "achieved"),
+    [goals]
+  );
 
   useEffect(() => {
     // keep goals fresh if auth changes
@@ -132,10 +150,10 @@ export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] 
   }, []);
 
   return (
-    <section className="border rounded-xl p-4 space-y-4">
+    <section className="card p-4 space-y-4">
       <div className="font-semibold">Goals</div>
 
-      <div className="border rounded-lg p-3 space-y-2">
+      <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
         <div className="text-sm font-medium">Add a goal</div>
         <div className="flex gap-2">
           <input
@@ -145,7 +163,11 @@ export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] 
             onChange={(e) => setTitle(e.target.value)}
             disabled={busy}
           />
-          <button className="border px-4 py-2" onClick={addGoal} disabled={busy}>
+          <button
+            className="btn-primary px-4 py-2"
+            onClick={addGoal}
+            disabled={busy}
+          >
             Add
           </button>
         </div>
@@ -155,60 +177,80 @@ export default function GoalsClient({ initialGoals }: { initialGoals: GoalRow[] 
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="border rounded-lg p-3 space-y-2">
+        <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
           <div className="font-medium">In progress</div>
 
           {inProgress.map((g) => (
-            <div key={g.id} className="border rounded-md p-2 flex items-center justify-between gap-3">
+            <div
+              key={g.id}
+              className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3"
+            >
               <div className="text-sm">{g.title}</div>
               <div className="flex gap-3 shrink-0">
                 <button
-                  className="underline text-sm"
+                  className="btn-text text-sm"
                   onClick={() => setGoalStatus(g.id, "achieved")}
                   disabled={busy}
                 >
                   Achieve
                 </button>
-                <button className="underline text-sm" onClick={() => deleteGoal(g.id)} disabled={busy}>
+                <button
+                  className="btn-text text-sm"
+                  onClick={() => deleteGoal(g.id)}
+                  disabled={busy}
+                >
                   Delete
                 </button>
               </div>
             </div>
           ))}
 
-          {inProgress.length === 0 && <div className="text-sm opacity-70">None yet.</div>}
+          {inProgress.length === 0 && (
+            <div className="text-sm opacity-70">None yet.</div>
+          )}
         </div>
 
-        <div className="border rounded-lg p-3 space-y-2">
+        <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
           <div className="font-medium">Achieved</div>
 
           {achieved.map((g) => (
-            <div key={g.id} className="border rounded-md p-2 flex items-center justify-between gap-3">
+            <div
+              key={g.id}
+              className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3"
+            >
               <div className="text-sm">
                 {g.title}
                 {g.achieved_at ? (
-                  <span className="text-xs opacity-70"> • {new Date(g.achieved_at).toLocaleDateString()}</span>
+                  <span className="text-xs opacity-70">
+                    {" "}
+                    • {new Date(g.achieved_at).toLocaleDateString()}
+                  </span>
                 ) : null}
               </div>
               <div className="flex gap-3 shrink-0">
                 <button
-                  className="underline text-sm"
+                  className="btn-text text-sm"
                   onClick={() => setGoalStatus(g.id, "in_progress")}
                   disabled={busy}
                 >
                   Undo
                 </button>
-                <button className="underline text-sm" onClick={() => deleteGoal(g.id)} disabled={busy}>
+                <button
+                  className="btn-text text-sm"
+                  onClick={() => deleteGoal(g.id)}
+                  disabled={busy}
+                >
                   Delete
                 </button>
               </div>
             </div>
           ))}
 
-          {achieved.length === 0 && <div className="text-sm opacity-70">None yet.</div>}
+          {achieved.length === 0 && (
+            <div className="text-sm opacity-70">None yet.</div>
+          )}
         </div>
       </div>
     </section>
   );
 }
-

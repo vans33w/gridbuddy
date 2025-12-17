@@ -93,7 +93,7 @@ export default function MarkButtons({
     <div className="space-y-2">
       <div className="flex gap-3">
         <button
-          className={`border px-3 py-1 rounded ${status === "want" ? "border-red-600 text-red-600" : ""}`}
+          className={`btn-secondary px-3 py-1.5 ${status === "want" ? "is-active" : ""}`}
           onClick={() => setTrackStatus("want")}
           disabled={loading}
         >
@@ -101,14 +101,14 @@ export default function MarkButtons({
         </button>
 
         <button
-          className={`border px-3 py-1 rounded ${status === "been" ? "border-red-600 text-red-600" : ""}`}
+          className={`btn-secondary px-3 py-1.5 ${status === "been" ? "is-active" : ""}`}
           onClick={() => setTrackStatus("been")}
           disabled={loading}
         >
           {loading && status !== "been" ? "..." : "Been"}
         </button>
 
-        <button className="underline text-sm" onClick={clearStatus} disabled={loading || !status}>
+        <button className="btn-text text-sm" onClick={clearStatus} disabled={loading || !status}>
           Clear
         </button>
       </div>

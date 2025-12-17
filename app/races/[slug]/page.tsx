@@ -11,7 +11,7 @@ export default async function RaceDetailPage(props: any) {
     return (
       <main className="space-y-3">
         <p className="font-semibold">Invalid race.</p>
-        <Link className="underline" href="/races">Back to Races</Link>
+        <Link className="btn-text" href="/races">Back to Races</Link>
       </main>
     );
   }
@@ -31,7 +31,7 @@ export default async function RaceDetailPage(props: any) {
     return (
       <main className="space-y-3">
         <p>Race not found.</p>
-        <Link className="underline" href="/races">Back to Races</Link>
+        <Link className="btn-text" href="/races">Back to Races</Link>
       </main>
     );
   }
@@ -46,7 +46,7 @@ export default async function RaceDetailPage(props: any) {
     return (
       <main className="space-y-3">
         <p>Race not found.</p>
-        <Link className="underline" href="/races">Back to Races</Link>
+        <Link className="btn-text" href="/races">Back to Races</Link>
       </main>
     );
   }
@@ -74,7 +74,7 @@ export default async function RaceDetailPage(props: any) {
 
   return (
     <main className="space-y-4 max-w-2xl">
-      <Link className="underline" href="/races">← Back to Races</Link>
+      <Link className="btn-text text-sm" href="/races">← Back to Races</Link>
 
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">
@@ -90,10 +90,10 @@ export default async function RaceDetailPage(props: any) {
 
       {race.hero_image_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={race.hero_image_url} alt={race.name} className="w-full border rounded-xl" />
+        <img src={race.hero_image_url} alt={race.name} className="w-full card" />
       )}
 
-      <div className="border rounded-xl p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Race details</div>
         <div className="text-sm opacity-80">Season: {race.season ?? "—"}</div>
         <div className="text-sm opacity-80">Round: {race.round ?? "—"}</div>
@@ -103,7 +103,7 @@ export default async function RaceDetailPage(props: any) {
         <div className="text-sm opacity-80">
           Website:{" "}
           {race.official_website ? (
-            <a className="underline" href={race.official_website} target="_blank" rel="noreferrer">
+            <a className="btn-text" href={race.official_website} target="_blank" rel="noreferrer">
               Open
             </a>
           ) : (
@@ -112,7 +112,7 @@ export default async function RaceDetailPage(props: any) {
         </div>
       </div>
 
-      <div className="border rounded-xl p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Popularity</div>
         <div className="text-sm opacity-80">Total picks: {pop?.total_picks ?? 0}</div>
         <div className="text-sm opacity-80">

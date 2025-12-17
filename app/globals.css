@@ -3,6 +3,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --accent: #dc2626;
+  --accent-hover: #b91c1c;
+  --border: #2a2a2a;
+  --border-hover: #404040;
 }
 
 @theme inline {
@@ -16,6 +20,8 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --border: #e5e5e5;
+    --border-hover: #a3a3a3;
   }
 }
 
@@ -23,4 +29,140 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Base input styles */
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+textarea,
+select {
+  border-color: var(--border);
+  border-radius: 0.375rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Primary buttons (solid background) */
+.btn-primary {
+  background-color: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--foreground);
+  border-radius: 0.375rem;
+  transition: all 0.15s ease;
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--foreground);
+  color: var(--background);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Secondary buttons (bordered) */
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: 0.375rem;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--accent);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--accent);
+  color: var(--foreground);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Text buttons (underline style) */
+.btn-text {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+.btn-text:focus-visible {
+  outline: none;
+  color: var(--accent);
+  text-decoration-thickness: 2px;
+}
+
+.btn-text:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-text:hover:not(:disabled) {
+  color: var(--accent);
+}
+
+.btn-text:active:not(:disabled) {
+  color: var(--accent-hover);
+}
+
+/* Danger text button */
+.btn-text-danger {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  color: var(--accent);
+  transition: color 0.15s ease;
+}
+
+.btn-text-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-text-danger:focus-visible {
+  outline: none;
+  text-decoration-thickness: 2px;
+}
+
+.btn-text-danger:hover:not(:disabled) {
+  color: var(--accent-hover);
+}
+
+.btn-text-danger:active:not(:disabled) {
+  color: #991b1b;
+}
+
+/* Active state for Want/Been buttons */
+.btn-secondary.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Consistent border styling for cards/sections */
+.card {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
 }

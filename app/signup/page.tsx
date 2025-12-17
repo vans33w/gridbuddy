@@ -54,12 +54,12 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="p-6 space-y-4 max-w-md">
+    <main className="space-y-6 max-w-md">
       <BackHome />
 
       <h1 className="text-2xl font-bold">Sign up</h1>
 
-      <div className="border p-4 space-y-3">
+      <div className="card p-4 space-y-3">
         <input
           className="border p-2 w-full"
           placeholder="Email"
@@ -77,7 +77,7 @@ export default function SignupPage() {
         />
 
         <button
-          className="border px-4 py-2 w-full"
+          className="btn-primary px-4 py-2 w-full"
           onClick={onSignup}
           disabled={loading}
         >
@@ -89,7 +89,7 @@ export default function SignupPage() {
 
         <p className="text-sm opacity-80">
           Already have an account?{" "}
-          <Link className="underline" href="/login">
+          <Link className="btn-text" href="/login">
             Log in
           </Link>
         </p>

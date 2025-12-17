@@ -7,9 +7,9 @@ export default async function TrackDetailBySlugPage(props: any) {
 
   if (!slug) {
     return (
-      <main className="p-6 space-y-3">
+      <main className="space-y-3">
         <p className="font-semibold">Invalid track slug.</p>
-        <Link className="underline" href="/tracks">Back to Tracks</Link>
+        <Link className="btn-text" href="/tracks">Back to Tracks</Link>
       </main>
     );
   }
@@ -24,9 +24,9 @@ export default async function TrackDetailBySlugPage(props: any) {
 
   if (trackErr || !track) {
     return (
-      <main className="p-6 space-y-3">
+      <main className="space-y-3">
         <p>Track not found.</p>
-        <Link className="underline" href="/tracks">Back to Tracks</Link>
+        <Link className="btn-text" href="/tracks">Back to Tracks</Link>
       </main>
     );
   }
@@ -38,8 +38,8 @@ export default async function TrackDetailBySlugPage(props: any) {
     .maybeSingle();
 
   return (
-    <main className="p-6 space-y-4 max-w-2xl">
-      <Link className="underline" href="/tracks">← Back to Tracks</Link>
+    <main className="space-y-4 max-w-2xl">
+      <Link className="btn-text text-sm" href="/tracks">← Back to Tracks</Link>
 
       <h1 className="text-3xl font-bold">
         {track.name} {track.country ? `— ${track.country}` : ""}
@@ -47,10 +47,10 @@ export default async function TrackDetailBySlugPage(props: any) {
 
       {track.hero_image_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={track.hero_image_url} alt={track.name} className="w-full border" />
+        <img src={track.hero_image_url} alt={track.name} className="w-full card" />
       )}
 
-      <div className="border p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Track details</div>
         <div className="text-sm opacity-80">City: {track.city ?? "—"}</div>
         <div className="text-sm opacity-80">Length (km): {track.length_km ?? "—"}</div>
@@ -59,7 +59,7 @@ export default async function TrackDetailBySlugPage(props: any) {
         <div className="text-sm opacity-80">
           Website:{" "}
           {track.website ? (
-            <a className="underline" href={track.website} target="_blank">
+            <a className="btn-text" href={track.website} target="_blank">
               Open
             </a>
           ) : (
@@ -68,7 +68,7 @@ export default async function TrackDetailBySlugPage(props: any) {
         </div>
       </div>
 
-      <div className="border p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Popularity</div>
         <div className="text-sm opacity-80">Total picks: {pop?.total_picks ?? 0}</div>
         <div className="text-sm opacity-80">
