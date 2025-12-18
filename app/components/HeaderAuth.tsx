@@ -46,12 +46,12 @@ export default function HeaderAuth() {
     return (
       <div className="flex items-center gap-3 text-sm">
         {pathname !== "/login" && (
-          <Link href="/login" className="hover:text-red-600 transition-colors">
+          <Link href="/login" className="btn-text-danger">
             Log in
           </Link>
         )}
         {pathname !== "/signup" && (
-          <Link href="/signup" className="hover:text-red-600 transition-colors">
+          <Link href="/signup" className="btn-secondary px-3 py-1">
             Sign up
           </Link>
         )}
