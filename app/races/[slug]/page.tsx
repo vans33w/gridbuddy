@@ -44,7 +44,7 @@ export default async function RaceDetailPage(props: any) {
   const { data: race, error: raceErr } = await supabase
     .from("races_catalog")
     .select(
-      "id,slug,name,country,city,circuit_name,season,round,race_date,official_website,hero_image_url"
+      "id,slug,name,country,city,circuit_name,official_website,hero_image_url"
     )
     .eq("slug", raw)
     .single();
@@ -110,9 +110,6 @@ export default async function RaceDetailPage(props: any) {
 
       <div className="card p-4 space-y-1">
         <div className="font-semibold">Race details</div>
-        <div className="text-sm opacity-80">Season: {race.season ?? "—"}</div>
-        <div className="text-sm opacity-80">Round: {race.round ?? "—"}</div>
-        <div className="text-sm opacity-80">Date: {race.race_date ?? "—"}</div>
         <div className="text-sm opacity-80">City: {race.city ?? "—"}</div>
         <div className="text-sm opacity-80">
           Circuit: {race.circuit_name ?? "—"}
