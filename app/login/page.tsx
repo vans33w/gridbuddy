@@ -56,7 +56,7 @@ export default function LoginPage() {
     <main className="max-w-md space-y-6">
       <h1 className="text-2xl font-bold">Log in</h1>
 
-      <div className="border rounded-xl p-4 space-y-3">
+      <div className="card p-4 space-y-3">
         <input
           className="border p-2 w-full"
           placeholder="Email"
@@ -73,7 +73,7 @@ export default function LoginPage() {
         />
 
         <button
-          className="border px-4 py-2 w-full"
+          className="btn-primary px-4 py-2 w-full"
           onClick={handleLogin}
           disabled={loading}
         >
@@ -84,8 +84,8 @@ export default function LoginPage() {
       </div>
 
       <p className="text-sm opacity-80">
-        Don’t have an account?{" "}
-        <Link href="/signup" className="underline">
+        Don't have an account?{" "}
+        <Link href="/signup" className="btn-text">
           Sign up
         </Link>
       </p>

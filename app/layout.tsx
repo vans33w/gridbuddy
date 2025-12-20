@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import HeaderAuth from "./components/HeaderAuth";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,30 +20,38 @@ export const metadata: Metadata = {
   description: "Motorsport journal and track bucket list",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-neutral-900`}
       >
-        <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
+        <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/90 backdrop-blur">
           <div className="mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">
-            <Link href="/" className="font-bold text-lg tracking-tight text-red-600">
+            <Link
+              href="/"
+              className="font-bold text-lg tracking-tight text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
+            >
+              <Image src="/logo.png" alt="Grid Buddy" width={32} height={32} />
               Grid Buddy
             </Link>
 
             <div className="flex items-center gap-6">
               <nav className="flex flex-wrap gap-5 text-sm font-medium">
-                <Link href="/moments" className="hover:text-red-600 transition-colors">
+                <Link href="/moments" className="btn-text-danger">
                   Moments
                 </Link>
-                <Link href="/tracks" className="hover:text-red-600 transition-colors">
+                <Link href="/tracks" className="btn-text-danger">
                   Tracks
                 </Link>
-                <Link href="/races" className="hover:text-red-600 transition-colors">
+                <Link href="/races" className="btn-text-danger">
                   Races
                 </Link>
-                <Link href="/bucket-list" className="hover:text-red-600 transition-colors">
+                <Link href="/bucket-list" className="btn-text-danger">
                   My Bucket List
                 </Link>
               </nav>
@@ -54,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
 
-        <footer className="border-t mt-16">
+        <footer className="border-t border-[var(--border)] mt-16">
           <div className="mx-auto max-w-5xl px-6 py-6 text-xs text-neutral-500">
             © {new Date().getFullYear()} Grid Buddy
           </div>

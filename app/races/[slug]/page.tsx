@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "../../../lib/supabase/server";
 import MarkButtons from "./MarkButtons";
+import Comments from "../../components/Comments";
 
 export default async function RaceDetailPage(props: any) {
   const p = await Promise.resolve(props.params);
@@ -11,7 +12,9 @@ export default async function RaceDetailPage(props: any) {
     return (
       <main className="space-y-3">
         <p className="font-semibold">Invalid race.</p>
-        <Link className="underline" href="/races">Back to Races</Link>
+        <Link className="btn-text" href="/races">
+          Back to Races
+        </Link>
       </main>
     );
   }
@@ -31,14 +34,18 @@ export default async function RaceDetailPage(props: any) {
     return (
       <main className="space-y-3">
         <p>Race not found.</p>
-        <Link className="underline" href="/races">Back to Races</Link>
+        <Link className="btn-text" href="/races">
+          Back to Races
+        </Link>
       </main>
     );
   }
 
   const { data: race, error: raceErr } = await supabase
     .from("races_catalog")
-    .select("id,slug,name,country,city,circuit_name,season,round,race_date,official_website,hero_image_url")
+    .select(
+      "id,slug,name,country,city,circuit_name,official_website,hero_image_url"
+    )
     .eq("slug", raw)
     .single();
 
@@ -46,7 +53,9 @@ export default async function RaceDetailPage(props: any) {
     return (
       <main className="space-y-3">
         <p>Race not found.</p>
-        <Link className="underline" href="/races">Back to Races</Link>
+        <Link className="btn-text" href="/races">
+          Back to Races
+        </Link>
       </main>
     );
   }
@@ -74,7 +83,9 @@ export default async function RaceDetailPage(props: any) {
 
   return (
     <main className="space-y-4 max-w-2xl">
-      <Link className="underline" href="/races">← Back to Races</Link>
+      <Link className="btn-text text-sm" href="/races">
+        ← Back to Races
+      </Link>
 
       <div className="space-y-2">
         <h1 className="text-3xl font-bold">
@@ -90,20 +101,28 @@ export default async function RaceDetailPage(props: any) {
 
       {race.hero_image_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={race.hero_image_url} alt={race.name} className="w-full border rounded-xl" />
+        <img
+          src={race.hero_image_url}
+          alt={race.name}
+          className="w-full card"
+        />
       )}
 
-      <div className="border rounded-xl p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Race details</div>
-        <div className="text-sm opacity-80">Season: {race.season ?? "—"}</div>
-        <div className="text-sm opacity-80">Round: {race.round ?? "—"}</div>
-        <div className="text-sm opacity-80">Date: {race.race_date ?? "—"}</div>
         <div className="text-sm opacity-80">City: {race.city ?? "—"}</div>
-        <div className="text-sm opacity-80">Circuit: {race.circuit_name ?? "—"}</div>
+        <div className="text-sm opacity-80">
+          Circuit: {race.circuit_name ?? "—"}
+        </div>
         <div className="text-sm opacity-80">
           Website:{" "}
           {race.official_website ? (
-            <a className="underline" href={race.official_website} target="_blank" rel="noreferrer">
+            <a
+              className="btn-text"
+              href={race.official_website}
+              target="_blank"
+              rel="noreferrer"
+            >
               Open
             </a>
           ) : (
@@ -112,13 +131,17 @@ export default async function RaceDetailPage(props: any) {
         </div>
       </div>
 
-      <div className="border rounded-xl p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Popularity</div>
-        <div className="text-sm opacity-80">Total picks: {pop?.total_picks ?? 0}</div>
+        <div className="text-sm opacity-80">
+          Total picks: {pop?.total_picks ?? 0}
+        </div>
         <div className="text-sm opacity-80">
           Want: {pop?.want_picks ?? 0} • Been: {pop?.been_picks ?? 0}
         </div>
       </div>
+
+      <Comments entityType="race" entityId={race.id} />
     </main>
   );
 }

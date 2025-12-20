@@ -174,15 +174,15 @@ export default function TracksPage() {
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
-      <section className="border rounded-xl p-4 space-y-3">
+      <section className="card p-4 space-y-3">
         <div className="font-semibold">Top 5 Popular Tracks</div>
 
         <div className="space-y-2">
           {popularTop5.map((r, i) => (
-            <div key={r.track_id} className="border rounded-lg p-3">
+            <div key={r.track_id} className="border border-[var(--border)] rounded-lg p-3">
               <div className="font-semibold">
                 {r.slug ? (
-                  <Link className="underline" href={`/tracks/${r.slug}`}>
+                  <Link className="btn-text" href={`/tracks/${r.slug}`}>
                     #{i + 1} {r.name} {r.country ? `— ${r.country}` : ""}
                   </Link>
                 ) : (
@@ -199,7 +199,7 @@ export default function TracksPage() {
         </div>
       </section>
 
-      <section className="border rounded-xl p-4 space-y-3">
+      <section className="card p-4 space-y-3">
         <div className="font-semibold">Browse all tracks</div>
 
         <input
@@ -209,11 +209,11 @@ export default function TracksPage() {
           onChange={(e) => setQuery(e.target.value)}
         />
 
-        <div className="border max-h-72 overflow-y-auto rounded-md">
+        <div className="border border-[var(--border)] max-h-72 overflow-y-auto rounded-md">
           {filteredCatalog.map((t) => (
-            <div key={t.id} className="flex items-center justify-between px-3 py-2 border-b">
+            <div key={t.id} className="flex items-center justify-between px-3 py-2 border-b border-[var(--border)] last:border-b-0">
               {t.slug ? (
-                <Link className="underline" href={`/tracks/${t.slug}`}>
+                <Link className="btn-text" href={`/tracks/${t.slug}`}>
                   {t.name}
                   {t.country ? ` — ${t.country}` : ""}
                 </Link>
@@ -221,18 +221,20 @@ export default function TracksPage() {
                 <span className="text-sm text-red-600">Missing slug for: {t.name}</span>
               )}
 
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <button
-                  className={`underline ${!isAuthed ? "opacity-50" : ""}`}
+                  className={`btn-text text-sm ${!isAuthed ? "opacity-50" : ""}`}
                   onClick={() => setStatus(t.id, "want")}
                   title={!isAuthed ? "Log in to save" : ""}
+                  disabled={!isAuthed}
                 >
                   Want
                 </button>
                 <button
-                  className={`underline ${!isAuthed ? "opacity-50" : ""}`}
+                  className={`btn-text text-sm ${!isAuthed ? "opacity-50" : ""}`}
                   onClick={() => setStatus(t.id, "been")}
                   title={!isAuthed ? "Log in to save" : ""}
+                  disabled={!isAuthed}
                 >
                   Been
                 </button>
@@ -245,12 +247,12 @@ export default function TracksPage() {
 
         {!isAuthed && (
           <div className="text-sm opacity-70">
-            Want/Been requires <Link className="underline" href="/login">login</Link>.
+            Want/Been requires <Link className="btn-text" href="/login">login</Link>.
           </div>
         )}
       </section>
 
-      <section className="space-y-2">
+      <section className="space-y-3">
         <div className="font-semibold">Your list</div>
 
         {!isAuthed ? (
@@ -260,10 +262,10 @@ export default function TracksPage() {
             {userTracks.map((ut) => {
               const t = trackById(ut.track_id);
               return (
-                <div key={ut.id} className="border rounded-xl p-3 flex items-center justify-between gap-4">
+                <div key={ut.id} className="card p-3 flex items-center justify-between gap-4">
                   <div className="min-w-0">
                     {t?.slug ? (
-                      <Link className="underline" href={`/tracks/${t.slug}`}>
+                      <Link className="btn-text" href={`/tracks/${t.slug}`}>
                         {t.name}
                         {t.country ? ` — ${t.country}` : ""}
                       </Link>
@@ -275,16 +277,16 @@ export default function TracksPage() {
 
                   <div className="flex gap-3 shrink-0">
                     {ut.status !== "want" && (
-                      <button className="underline" onClick={() => setStatus(ut.track_id, "want")}>
+                      <button className="btn-text text-sm" onClick={() => setStatus(ut.track_id, "want")}>
                         Mark Want
                       </button>
                     )}
                     {ut.status !== "been" && (
-                      <button className="underline" onClick={() => setStatus(ut.track_id, "been")}>
+                      <button className="btn-text text-sm" onClick={() => setStatus(ut.track_id, "been")}>
                         Mark Been
                       </button>
                     )}
-                    <button className="underline" onClick={() => removeUserTrack(ut.id)}>
+                    <button className="btn-text text-sm" onClick={() => removeUserTrack(ut.id)}>
                       Remove
                     </button>
                   </div>

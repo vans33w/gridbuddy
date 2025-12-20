@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabaseServer } from "../../../lib/supabase/server";
+import Comments from "../../components/Comments";
 
 export default async function TrackDetailBySlugPage(props: any) {
   const p = await Promise.resolve(props.params);
@@ -7,9 +8,11 @@ export default async function TrackDetailBySlugPage(props: any) {
 
   if (!slug) {
     return (
-      <main className="p-6 space-y-3">
+      <main className="space-y-3">
         <p className="font-semibold">Invalid track slug.</p>
-        <Link className="underline" href="/tracks">Back to Tracks</Link>
+        <Link className="btn-text" href="/tracks">
+          Back to Tracks
+        </Link>
       </main>
     );
   }
@@ -18,15 +21,19 @@ export default async function TrackDetailBySlugPage(props: any) {
 
   const { data: track, error: trackErr } = await supabase
     .from("tracks_catalog")
-    .select("id,slug,name,country,city,length_km,turns,lap_record,website,hero_image_url")
+    .select(
+      "id,slug,name,country,city,length_km,turns,lap_record,website,hero_image_url"
+    )
     .eq("slug", slug)
     .single();
 
   if (trackErr || !track) {
     return (
-      <main className="p-6 space-y-3">
+      <main className="space-y-3">
         <p>Track not found.</p>
-        <Link className="underline" href="/tracks">Back to Tracks</Link>
+        <Link className="btn-text" href="/tracks">
+          Back to Tracks
+        </Link>
       </main>
     );
   }
@@ -38,8 +45,10 @@ export default async function TrackDetailBySlugPage(props: any) {
     .maybeSingle();
 
   return (
-    <main className="p-6 space-y-4 max-w-2xl">
-      <Link className="underline" href="/tracks">← Back to Tracks</Link>
+    <main className="space-y-4 max-w-2xl">
+      <Link className="btn-text text-sm" href="/tracks">
+        ← Back to Tracks
+      </Link>
 
       <h1 className="text-3xl font-bold">
         {track.name} {track.country ? `— ${track.country}` : ""}
@@ -47,19 +56,27 @@ export default async function TrackDetailBySlugPage(props: any) {
 
       {track.hero_image_url && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={track.hero_image_url} alt={track.name} className="w-full border" />
+        <img
+          src={track.hero_image_url}
+          alt={track.name}
+          className="w-full card"
+        />
       )}
 
-      <div className="border p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Track details</div>
         <div className="text-sm opacity-80">City: {track.city ?? "—"}</div>
-        <div className="text-sm opacity-80">Length (km): {track.length_km ?? "—"}</div>
+        <div className="text-sm opacity-80">
+          Length (km): {track.length_km ?? "—"}
+        </div>
         <div className="text-sm opacity-80">Turns: {track.turns ?? "—"}</div>
-        <div className="text-sm opacity-80">Lap record: {track.lap_record ?? "—"}</div>
+        <div className="text-sm opacity-80">
+          Lap record: {track.lap_record ?? "—"}
+        </div>
         <div className="text-sm opacity-80">
           Website:{" "}
           {track.website ? (
-            <a className="underline" href={track.website} target="_blank">
+            <a className="btn-text" href={track.website} target="_blank">
               Open
             </a>
           ) : (
@@ -68,13 +85,17 @@ export default async function TrackDetailBySlugPage(props: any) {
         </div>
       </div>
 
-      <div className="border p-4 space-y-1">
+      <div className="card p-4 space-y-1">
         <div className="font-semibold">Popularity</div>
-        <div className="text-sm opacity-80">Total picks: {pop?.total_picks ?? 0}</div>
+        <div className="text-sm opacity-80">
+          Total picks: {pop?.total_picks ?? 0}
+        </div>
         <div className="text-sm opacity-80">
           Want: {pop?.want_picks ?? 0} • Been: {pop?.been_picks ?? 0}
         </div>
       </div>
+
+      <Comments entityType="track" entityId={track.id} />
     </main>
   );
 }

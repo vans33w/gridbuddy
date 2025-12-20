@@ -136,18 +136,18 @@ export default function PicksClient({
         <p className="text-red-600 text-sm">{error}</p>
       )}
 
-      <section className="border rounded-xl p-4 space-y-3">
+      <section className="card p-4 space-y-3">
         <div className="font-semibold">Tracks</div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="border rounded-lg p-3 space-y-2">
+          <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
             <div className="font-medium">Want to go</div>
 
             {tracksWant.map((t) => (
-              <div key={t.id} className="border rounded-md p-2 flex items-center justify-between gap-3">
+              <div key={t.id} className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3">
                 <div className="text-sm min-w-0">
                   {t.track?.slug ? (
-                    <Link className="underline" href={`/tracks/${t.track.slug}`}>
+                    <Link className="btn-text" href={`/tracks/${t.track.slug}`}>
                       {t.track.name}
                       {t.track.country ? ` — ${t.track.country}` : ""}
                     </Link>
@@ -158,14 +158,14 @@ export default function PicksClient({
 
                 <div className="flex gap-3 shrink-0">
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => setTrackStatus(t.id, "been")}
                     disabled={busyId === `t-${t.id}`}
                   >
                     Mark Been
                   </button>
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => deleteTrack(t.id)}
                     disabled={busyId === `t-del-${t.id}`}
                   >
@@ -178,14 +178,14 @@ export default function PicksClient({
             {tracksWant.length === 0 && <div className="text-sm opacity-70">None yet.</div>}
           </div>
 
-          <div className="border rounded-lg p-3 space-y-2">
+          <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
             <div className="font-medium">Been</div>
 
             {tracksBeen.map((t) => (
-              <div key={t.id} className="border rounded-md p-2 flex items-center justify-between gap-3">
+              <div key={t.id} className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3">
                 <div className="text-sm min-w-0">
                   {t.track?.slug ? (
-                    <Link className="underline" href={`/tracks/${t.track.slug}`}>
+                    <Link className="btn-text" href={`/tracks/${t.track.slug}`}>
                       {t.track.name}
                       {t.track.country ? ` — ${t.track.country}` : ""}
                     </Link>
@@ -196,14 +196,14 @@ export default function PicksClient({
 
                 <div className="flex gap-3 shrink-0">
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => setTrackStatus(t.id, "want")}
                     disabled={busyId === `t-${t.id}`}
                   >
                     Mark Want
                   </button>
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => deleteTrack(t.id)}
                     disabled={busyId === `t-del-${t.id}`}
                   >
@@ -218,18 +218,18 @@ export default function PicksClient({
         </div>
       </section>
 
-      <section className="border rounded-xl p-4 space-y-3">
+      <section className="card p-4 space-y-3">
         <div className="font-semibold">Races</div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="border rounded-lg p-3 space-y-2">
+          <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
             <div className="font-medium">Want to go</div>
 
             {racesWant.map((r) => (
-              <div key={r.id} className="border rounded-md p-2 flex items-center justify-between gap-3">
+              <div key={r.id} className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3">
                 <div className="text-sm min-w-0">
                   {r.race?.slug ? (
-                    <Link className="underline" href={`/races/${r.race.slug}`}>
+                    <Link className="btn-text" href={`/races/${r.race.slug}`}>
                       {r.race.name}
                       {r.race.country ? ` — ${r.race.country}` : ""}
                     </Link>
@@ -240,14 +240,14 @@ export default function PicksClient({
 
                 <div className="flex gap-3 shrink-0">
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => setRaceStatus(r.id, "been")}
                     disabled={busyId === `r-${r.id}`}
                   >
                     Mark Been
                   </button>
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => deleteRace(r.id)}
                     disabled={busyId === `r-del-${r.id}`}
                   >
@@ -260,14 +260,14 @@ export default function PicksClient({
             {racesWant.length === 0 && <div className="text-sm opacity-70">None yet.</div>}
           </div>
 
-          <div className="border rounded-lg p-3 space-y-2">
+          <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
             <div className="font-medium">Been</div>
 
             {racesBeen.map((r) => (
-              <div key={r.id} className="border rounded-md p-2 flex items-center justify-between gap-3">
+              <div key={r.id} className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3">
                 <div className="text-sm min-w-0">
                   {r.race?.slug ? (
-                    <Link className="underline" href={`/races/${r.race.slug}`}>
+                    <Link className="btn-text" href={`/races/${r.race.slug}`}>
                       {r.race.name}
                       {r.race.country ? ` — ${r.race.country}` : ""}
                     </Link>
@@ -278,14 +278,14 @@ export default function PicksClient({
 
                 <div className="flex gap-3 shrink-0">
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => setRaceStatus(r.id, "want")}
                     disabled={busyId === `r-${r.id}`}
                   >
                     Mark Want
                   </button>
                   <button
-                    className="underline text-sm"
+                    className="btn-text text-sm"
                     onClick={() => deleteRace(r.id)}
                     disabled={busyId === `r-del-${r.id}`}
                   >

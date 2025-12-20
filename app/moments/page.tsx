@@ -313,12 +313,12 @@ export default function MomentsPage() {
 
       <h1 className="text-2xl font-bold">Moments</h1>
 
-      <div className="space-y-3 border rounded-xl p-4">
+      <div className="card p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="font-semibold">{editingId ? "Edit entry" : "New entry"}</div>
 
           {editingId && (
-            <button className="underline text-sm" onClick={resetFormToCreate} disabled={saving}>
+            <button className="btn-text text-sm" onClick={resetFormToCreate} disabled={saving}>
               Cancel edit
             </button>
           )}
@@ -366,7 +366,7 @@ export default function MomentsPage() {
         <div className="space-y-1">
           <label className="text-sm opacity-80">Photos {editingId ? "(optional: add more)" : ""}</label>
           <input
-            className="border p-2 w-full"
+            className="border p-2 w-full rounded-md"
             type="file"
             accept="image/*"
             multiple
@@ -375,7 +375,7 @@ export default function MomentsPage() {
           <div className="text-xs opacity-70">{fileLabel}</div>
         </div>
 
-        <button className="border px-4 py-2" onClick={saveMoment} disabled={saving}>
+        <button className="btn-primary px-4 py-2" onClick={saveMoment} disabled={saving}>
           {saving ? "Saving..." : editingId ? "Save changes" : "Save entry"}
         </button>
 
@@ -386,7 +386,7 @@ export default function MomentsPage() {
         {moments.map((m) => {
           const urls = photoUrlsByMoment[m.id] ?? [];
           return (
-            <div key={m.id} className="border rounded-xl p-4 space-y-2">
+            <div key={m.id} className="card p-4 space-y-2">
               <div className="flex items-baseline justify-between gap-4">
                 <div className="font-semibold">{m.title ?? "Untitled"}</div>
                 <div className="text-xs opacity-60">
@@ -400,17 +400,17 @@ export default function MomentsPage() {
                 <div className="flex gap-2 overflow-x-auto">
                   {urls.map((u, idx) => (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img key={idx} src={u} alt="Moment photo" className="h-28 border" />
+                    <img key={idx} src={u} alt="Moment photo" className="h-28 rounded-md border border-[var(--border)]" />
                   ))}
                 </div>
               )}
 
               <div className="pt-2 flex gap-4">
-                <button className="underline text-sm" onClick={() => startEdit(m)} disabled={saving}>
+                <button className="btn-text text-sm" onClick={() => startEdit(m)} disabled={saving}>
                   Edit
                 </button>
                 <button
-                  className="underline text-sm text-red-600"
+                  className="btn-text-danger text-sm"
                   onClick={() => deleteMoment(m.id)}
                   disabled={saving}
                 >

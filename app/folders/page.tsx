@@ -62,17 +62,17 @@ export default function FoldersPage() {
   }, []);
 
   return (
-    <main className="p-6 space-y-4 max-w-xl">
+    <main className="space-y-6 max-w-xl">
       <h1 className="text-2xl font-bold">Folders</h1>
 
-      <div className="space-y-2 border p-4">
+      <div className="card p-4 space-y-3">
         <input
           className="border p-2 w-full"
           placeholder="Folder name (e.g., 'Monaco 2024')"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <button className="border px-4 py-2" onClick={addFolder}>
+        <button className="btn-primary px-4 py-2" onClick={addFolder}>
           Create folder
         </button>
         {error && <p className="text-red-600 text-sm">{error}</p>}
@@ -80,9 +80,9 @@ export default function FoldersPage() {
 
       <div className="space-y-2">
         {folders.map((f) => (
-          <div key={f.id} className="border p-3 flex justify-between">
+          <div key={f.id} className="card p-3 flex justify-between items-center">
             <div>{f.name}</div>
-            <button className="underline" onClick={() => deleteFolder(f.id)}>
+            <button className="btn-text-danger text-sm" onClick={() => deleteFolder(f.id)}>
               Delete
             </button>
           </div>

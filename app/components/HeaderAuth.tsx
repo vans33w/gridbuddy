@@ -46,12 +46,12 @@ export default function HeaderAuth() {
     return (
       <div className="flex items-center gap-3 text-sm">
         {pathname !== "/login" && (
-          <Link href="/login" className="hover:text-red-600">
+          <Link href="/login" className="btn-text-danger">
             Log in
           </Link>
         )}
         {pathname !== "/signup" && (
-          <Link href="/signup" className="hover:text-red-600">
+          <Link href="/signup" className="btn-secondary px-3 py-1">
             Sign up
           </Link>
         )}
@@ -62,10 +62,7 @@ export default function HeaderAuth() {
   return (
     <div className="flex items-center gap-3 text-sm">
       <span className="hidden sm:inline text-xs opacity-70">{email}</span>
-      <button
-        onClick={logout}
-        className="border px-3 py-1 rounded hover:border-red-600 hover:text-red-600 transition"
-      >
+      <button onClick={logout} className="btn-secondary px-3 py-1">
         Log out
       </button>
     </div>
