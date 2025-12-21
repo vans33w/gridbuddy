@@ -44,7 +44,7 @@ export default async function RaceDetailPage(props: any) {
   const { data: race, error: raceErr } = await supabase
     .from("races_catalog")
     .select(
-      "id,slug,name,country,city,circuit_name,official_website,hero_image_url"
+      "id,slug,name,country,city,circuit_name,official_website,hero_image_url,description"
     )
     .eq("slug", raw)
     .single();
@@ -129,6 +129,10 @@ export default async function RaceDetailPage(props: any) {
             "—"
           )}
         </div>
+
+        {race.description && (
+          <div className="text-sm opacity-80">{race.description}</div>
+        )}
       </div>
 
       <div className="card p-4 space-y-1">

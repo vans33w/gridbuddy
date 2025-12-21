@@ -22,7 +22,7 @@ export default async function TrackDetailBySlugPage(props: any) {
   const { data: track, error: trackErr } = await supabase
     .from("tracks_catalog")
     .select(
-      "id,slug,name,country,city,length_km,turns,lap_record,website,hero_image_url"
+      "id,slug,name,country,city,length_km,turns,lap_record,website,hero_image_url,description"
     )
     .eq("slug", slug)
     .single();
@@ -83,6 +83,10 @@ export default async function TrackDetailBySlugPage(props: any) {
             "—"
           )}
         </div>
+
+        {track.description && (
+          <div className="text-sm opacity-80">{track.description}</div>
+        )}
       </div>
 
       <div className="card p-4 space-y-1">
