@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "../../lib/supabase/server";
 import PicksClient, { RaceRow, TrackRow } from "./PicksClient";
 import GoalsClient from "./GoalsClient";
+import EventsClient from "../components/EventsClient";
 
 type GoalRow = {
   id: number;
@@ -57,6 +58,7 @@ export default async function BucketListPage() {
 
       <PicksClient initialTracks={initialTracks} initialRaces={initialRaces} />
       <GoalsClient initialGoals={initialGoals} />
+      <EventsClient />
     </main>
   );
 }
