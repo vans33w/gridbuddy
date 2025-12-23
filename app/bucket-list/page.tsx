@@ -58,7 +58,7 @@ export default async function BucketListPage() {
 
       <PicksClient initialTracks={initialTracks} initialRaces={initialRaces} />
       <GoalsClient initialGoals={initialGoals} />
-      <EventsClient />
+      <EventsClient userId={user.id} />
     </main>
   );
 }
