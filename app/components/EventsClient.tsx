@@ -87,47 +87,173 @@ function EventCard({ event }: { event: EventRow }) {
   );
 }
 
-export default function EventsClient() {
+export default function EventsClient({ userId }: { userId: string }) {
   const supabase = supabaseBrowser();
+
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function loadEvents() {
-      setError("");
-      setLoading(true);
+  // Form state
+  const [showForm, setShowForm] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: "",
+    description: "",
+    location: "",
+    event_date: "",
+  });
 
-      try {
-        const { data, error } = await supabase
-          .from("events")
-          .select("id,title,description,location,event_date")
-          .gt("event_date", new Date().toISOString())
-          .order("event_date", { ascending: true });
+  async function loadEvents() {
+    setError("");
+    setLoading(true);
 
-        if (error) throw new Error(error.message);
+    try {
+      const { data, error } = await supabase
+        .from("events")
+        .select("id,title,description,location,event_date")
+        .eq("user_id", userId)
+        .gt("event_date", new Date().toISOString())
+        .order("event_date", { ascending: true });
 
-        setEvents(data ?? []);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load events");
-      } finally {
-        setLoading(false);
-      }
+      if (error) throw new Error(error.message);
+
+      setEvents(data ?? []);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load events");
+    } finally {
+      setLoading(false);
     }
+  }
 
+  async function handleCreateEvent() {
+    setError("");
+    setSubmitting(true);
+
+    try {
+      if (!newEvent.title.trim() || !newEvent.event_date) {
+        throw new Error("Title and date are required");
+      }
+
+      const { error } = await supabase.from("events").insert({
+        user_id: userId,
+        title: newEvent.title.trim(),
+        description: newEvent.description.trim() || null,
+        location: newEvent.location.trim() || null,
+        event_date: new Date(newEvent.event_date).toISOString(),
+      });
+
+      if (error) throw new Error(error.message);
+
+      setNewEvent({ title: "", description: "", location: "", event_date: "" });
+      setShowForm(false);
+      await loadEvents();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to create event");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
     loadEvents();
-  }, [supabase]);
+  }, []);
 
   return (
     <section className="card p-4 space-y-4">
-      <div className="font-semibold">Upcoming Events</div>
+      <div className="flex items-center justify-between">
+        <div className="font-semibold">My Upcoming Events</div>
+        <button
+          className="btn-primary px-3 py-1 text-sm"
+          onClick={() => setShowForm(!showForm)}
+        >
+          {showForm ? "Cancel" : "Add Event"}
+        </button>
+      </div>
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
+      {/* Create Event Form */}
+      {showForm && userId && (
+        <div className="border border-[var(--border)] rounded-lg p-4 space-y-3">
+          <div className="space-y-2">
+            <input
+              type="text"
+              className="border p-2 w-full"
+              placeholder="Event title"
+              value={newEvent.title}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, title: e.target.value })
+              }
+            />
+
+            <textarea
+              className="border p-2 w-full min-h-[60px]"
+              placeholder="Description (optional)"
+              value={newEvent.description}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, description: e.target.value })
+              }
+            />
+
+            <input
+              type="text"
+              className="border p-2 w-full"
+              placeholder="Location (optional)"
+              value={newEvent.location}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, location: e.target.value })
+              }
+            />
+
+            <input
+              type="datetime-local"
+              className="border p-2 w-full"
+              value={newEvent.event_date}
+              onChange={(e) =>
+                setNewEvent({ ...newEvent, event_date: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <button
+              className="btn-primary px-3 py-1 text-sm"
+              onClick={handleCreateEvent}
+              disabled={
+                submitting || !newEvent.title.trim() || !newEvent.event_date
+              }
+            >
+              {submitting ? "Creating..." : "Create Event"}
+            </button>
+            <button
+              className="btn-text text-sm"
+              onClick={() => {
+                setShowForm(false);
+                setNewEvent({
+                  title: "",
+                  description: "",
+                  location: "",
+                  event_date: "",
+                });
+              }}
+              disabled={submitting}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Events List */}
       {loading ? (
         <p className="text-sm opacity-70">Loading events...</p>
       ) : events.length === 0 ? (
-        <p className="text-sm opacity-70">No upcoming events.</p>
+        <p className="text-sm opacity-70">
+          {userId
+            ? "No upcoming events. Add your first event!"
+            : "Log in to see your events."}
+        </p>
       ) : (
         <div className="space-y-3">
           {events.map((event) => (
