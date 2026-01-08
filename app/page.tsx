@@ -22,6 +22,9 @@ export default function HomePage() {
           <Link className="btn-text" href="/bucket-list">
             My Bucket List
           </Link>
+          <Link className="btn-text" href="/emissions">
+            Emissions Calculator
+          </Link>
         </div>
       </div>
     </main>

@@ -54,6 +54,9 @@ export default function RootLayout({
                 <Link href="/bucket-list" className="btn-text-danger">
                   My Bucket List
                 </Link>
+                <Link href="/emissions" className="btn-text-danger">
+                  Emissions
+                </Link>
               </nav>
 
               <HeaderAuth />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabaseServer } from "../../../lib/supabase/server";
 import Comments from "../../components/Comments";
+import SustainabilityGuide from "../../components/SustainabilityGuide";
 
 export default async function TrackDetailBySlugPage(props: any) {
   const p = await Promise.resolve(props.params);
@@ -98,6 +99,8 @@ export default async function TrackDetailBySlugPage(props: any) {
           Want: {pop?.want_picks ?? 0} • Been: {pop?.been_picks ?? 0}
         </div>
       </div>
+
+      <SustainabilityGuide trackId={track.id} />
 
       <Comments entityType="track" entityId={track.id} />
     </main>
