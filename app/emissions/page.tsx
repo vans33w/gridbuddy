@@ -54,7 +54,6 @@ export default function EmissionsPage() {
   );
   const [carFuelType, setCarFuelType] = useState<CarFuelType>("petrol");
   const [results, setResults] = useState<EmissionResult[]>([]);
-  const [showAssumptions, setShowAssumptions] = useState(false);
 
   function toggleMode(mode: TransportMode) {
     const newSet = new Set(selectedModes);
@@ -299,45 +298,12 @@ export default function EmissionsPage() {
             </div>
           </div>
 
-          <div className="card p-4 bg-neutral-50 dark:bg-neutral-900">
-            <button
-              onClick={() => setShowAssumptions(!showAssumptions)}
-              className="flex items-center justify-between w-full text-left"
-            >
-              <span className="font-semibold text-sm">Assumptions & Sources</span>
-              <span className="text-xs opacity-70">
-                {showAssumptions ? "▲" : "▼"}
-              </span>
-            </button>
-            {showAssumptions && (
-              <div className="mt-3 pt-3 border-t border-[var(--border)] text-xs opacity-80 space-y-2">
-                <p>
-                  <strong>Emission Factors:</strong> Estimates are based on publicly available
-                  emissions factors from UK DEFRA, European Environment Agency (EEA), and
-                  International Council on Clean Transportation (ICCT).
-                </p>
-                <p>
-                  <strong>Flight:</strong> 0.15 kg CO₂e per passenger-km (average economy, UK DEFRA)
-                </p>
-                <p>
-                  <strong>Rail:</strong> 0.04 kg CO₂e per passenger-km (electric + diesel mix, DEFRA + EEA)
-                </p>
-                <p>
-                  <strong>Coach:</strong> 0.03 kg CO₂e per passenger-km (long distance, DEFRA)
-                </p>
-                <p>
-                  <strong>Car (per vehicle-km):</strong> Petrol ICE: 0.18, Diesel ICE: 0.17,
-                  Hybrid: 0.11, EV (average grid): 0.05 (EEA + ICCT)
-                </p>
-                <p className="mt-3 pt-2 border-t border-[var(--border)] italic">
-                  Values represent averages and are intended for comparison only. This is not an
-                  official carbon accounting tool.
-                </p>
-              </div>
-            )}
-          </div>
         </div>
       )}
+
+      <p className="text-xs opacity-70 text-center italic">
+        Values represent averages and are intended for comparison only. This is not an official carbon accounting tool.
+      </p>
     </main>
   );
 }

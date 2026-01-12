@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { supabaseServer } from "../../../lib/supabase/server";
 import MarkButtons from "./MarkButtons";
 import Comments from "../../components/Comments";
+import RaceSustainabilityGuide from "../../components/RaceSustainabilityGuide";
 
 export default async function RaceDetailPage(props: any) {
   const p = await Promise.resolve(props.params);
@@ -144,6 +145,8 @@ export default async function RaceDetailPage(props: any) {
           Want: {pop?.want_picks ?? 0} • Been: {pop?.been_picks ?? 0}
         </div>
       </div>
+
+      <RaceSustainabilityGuide raceId={race.id} />
 
       <Comments entityType="race" entityId={race.id} />
     </main>
