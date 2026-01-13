@@ -11,7 +11,15 @@ type EventRow = {
   event_date: string; // ISO string
 };
 
-function EventCard({ event }: { event: EventRow }) {
+function EventCard({
+  event,
+  onDelete,
+  deleting,
+}: {
+  event: EventRow;
+  onDelete: (eventId: number) => void;
+  deleting: boolean;
+}) {
   const [countdown, setCountdown] = useState("");
 
   useEffect(() => {
@@ -83,6 +91,15 @@ function EventCard({ event }: { event: EventRow }) {
           <div className="text-xs opacity-70 mt-1">{formattedDate}</div>
         </div>
       </div>
+      <div className="flex justify-end pt-2 border-t border-[var(--border)]">
+        <button
+          className="btn-text-danger text-sm"
+          onClick={() => onDelete(event.id)}
+          disabled={deleting}
+        >
+          {deleting ? "Deleting..." : "Delete"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -93,6 +110,7 @@ export default function EventsClient({ userId }: { userId: string }) {
   const [events, setEvents] = useState<EventRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState("");
 
   // Form state
@@ -152,6 +170,32 @@ export default function EventsClient({ userId }: { userId: string }) {
       setError(e instanceof Error ? e.message : "Failed to create event");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleDeleteEvent(eventId: number) {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this event?"
+    );
+    if (!confirmed) return;
+
+    setError("");
+    setDeletingId(eventId);
+
+    try {
+      const { error } = await supabase
+        .from("events")
+        .delete()
+        .eq("id", eventId)
+        .eq("user_id", userId);
+
+      if (error) throw new Error(error.message);
+
+      await loadEvents();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to delete event");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -257,7 +301,12 @@ export default function EventsClient({ userId }: { userId: string }) {
       ) : (
         <div className="space-y-3">
           {events.map((event) => (
-            <EventCard key={event.id} event={event} />
+            <EventCard
+              key={event.id}
+              event={event}
+              onDelete={handleDeleteEvent}
+              deleting={deletingId === event.id}
+            />
           ))}
         </div>
       )}

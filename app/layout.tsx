@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import HeaderAuth from "./components/HeaderAuth";
+import MobileHeader from "./components/MobileHeader";
 import Image from "next/image";
 
 const spaceGrotesk = Space_Grotesk({
@@ -32,20 +33,23 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} antialiased bg-white text-[var(--secondary)]`}
       >
-        <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/90 backdrop-blur">
+        {/* Mobile Header */}
+        <MobileHeader />
+
+        {/* Desktop Header */}
+        <header className="hidden md:block sticky top-0 z-50 border-b border-[var(--border)] bg-white/90 backdrop-blur">
           <div className="mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">
             <Link
               href="/"
               className="font-bold text-lg tracking-tight text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors flex items-center gap-2"
               style={{ fontFamily: 'var(--font-space-grotesk)' }}
             >
-              <Image src="/logo.png" alt="Grid Buddy" width={32} height={32} />
-              Grid Buddy
+              <Image src="/logo1.png" alt="Grid Buddy" width={80} height={80} className="w-16 h-16 object-contain" />
             </Link>
 
             <div className="flex items-center gap-6">
-              <nav className="flex flex-wrap gap-5 text-sm font-medium">
-                <Link href="/emissions" className="btn-text-danger">
+              <nav className="flex items-center gap-5 text-sm font-medium">
+                <Link href="/emissions" className="btn-text-danger whitespace-nowrap">
                   Emissions Calculator
                 </Link>
                 <Link href="/moments" className="btn-text-danger">
@@ -67,7 +71,7 @@ export default function RootLayout({
           </div>
         </header>
 
-        <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
+        <main className="mx-auto max-w-5xl px-4 sm:px-6 py-6 sm:py-10">{children}</main>
 
         <footer className="border-t border-[var(--border)] mt-16">
           <div className="mx-auto max-w-5xl px-6 py-6 text-xs opacity-60">
