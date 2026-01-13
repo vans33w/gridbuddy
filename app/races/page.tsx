@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 
-type CatalogRace = { id: number; slug: string | null; name: string; country: string | null };
+type CatalogRace = { id: number; slug: string | null; name: string; country: string | null; hero_image_url: string | null };
 type UserRace = { id: number; race_id: number; status: "been" | "want"; created_at: string };
 
 type PopularRow = {
@@ -13,6 +13,7 @@ type PopularRow = {
   slug: string | null;
   name: string;
   country: string | null;
+  hero_image_url: string | null;
   total_picks: number;
   want_picks: number;
   been_picks: number;
@@ -52,7 +53,7 @@ export default function RacesPage() {
     setError("");
     const { data, error } = await supabase
       .from("races_catalog")
-      .select("id,slug,name,country")
+      .select("id,slug,name,country,hero_image_url")
       .order("name");
 
     if (error) {
@@ -64,17 +65,42 @@ export default function RacesPage() {
 
   async function loadTop5() {
     setError("");
-    const { data, error } = await supabase
+    const { data: popData, error: popError } = await supabase
       .from("race_popularity")
       .select("race_id,slug,name,country,total_picks,want_picks,been_picks")
       .order("total_picks", { ascending: false })
-      .limit(5);
+      .limit(8);
 
-    if (error) {
-      setError(error.message);
+    if (popError) {
+      setError(popError.message);
       return;
     }
-    setPopularTop5((data as PopularRow[]) ?? []);
+
+    if (!popData || popData.length === 0) {
+      setPopularTop5([]);
+      return;
+    }
+
+    const raceIds = popData.map((p) => p.race_id);
+    const { data: races, error: racesError } = await supabase
+      .from("races_catalog")
+      .select("id,hero_image_url")
+      .in("id", raceIds);
+
+    if (racesError) {
+      setError(racesError.message);
+      return;
+    }
+
+    const popularWithImages = popData.map((pop) => {
+      const race = races?.find((r) => r.id === pop.race_id);
+      return {
+        ...pop,
+        hero_image_url: race?.hero_image_url ?? null,
+      };
+    });
+
+    setPopularTop5(popularWithImages);
   }
 
   async function loadUserRaces() {
@@ -165,140 +191,244 @@ export default function RacesPage() {
   }, []);
 
   return (
-    <main className="space-y-6">
+    <main className="space-y-8">
       <BackHome />
 
-      <div>
-        <h1 className="text-2xl font-bold">Races</h1>
-        <p className="text-sm opacity-70">Browse as a guest. Log in to save Want/Been.</p>
-      </div>
-
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-
-      <section className="card p-4 space-y-3">
-        <div className="font-semibold">Top 5 Popular Races</div>
-
-        <div className="space-y-2">
-          {popularTop5.map((r, i) => (
-            <div key={r.race_id} className="border border-[var(--border)] rounded-lg p-3">
-              <div className="font-semibold">
-                {r.slug ? (
-                  <Link className="btn-text" href={`/races/${r.slug}`}>
-                    #{i + 1} {r.name} {r.country ? `— ${r.country}` : ""}
-                  </Link>
-                ) : (
-                  <span className="text-red-600">Missing slug for {r.name}</span>
-                )}
-              </div>
-              <div className="text-sm opacity-80">
-                Total: {r.total_picks} • Want: {r.want_picks} • Been: {r.been_picks}
-              </div>
-            </div>
-          ))}
-
-          {popularTop5.length === 0 && <div className="text-sm opacity-70">No popularity data yet.</div>}
+      {/* Search Bar */}
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--secondary)]/40">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
         </div>
-      </section>
-
-      <section className="card p-4 space-y-3">
-        <div className="font-semibold">Browse all races</div>
-
         <input
-          className="border p-2 w-full"
-          placeholder="Search (e.g. Monaco GP)"
+          className="border border-[var(--border)] rounded-lg pl-10 pr-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+          placeholder="Browse all races.."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+      </div>
 
-        <div className="border border-[var(--border)] max-h-72 overflow-y-auto rounded-md">
-          {filteredCatalog.map((r) => (
-            <div key={r.id} className="flex items-center justify-between px-3 py-2 border-b border-[var(--border)] last:border-b-0">
-              {r.slug ? (
-                <Link className="btn-text" href={`/races/${r.slug}`}>
-                  {r.name}
-                  {r.country ? ` — ${r.country}` : ""}
-                </Link>
-              ) : (
-                <span className="text-sm text-red-600">Missing slug for: {r.name}</span>
-              )}
+      {error && <p className="text-[var(--primary)] text-sm">{error}</p>}
 
-              <div className="flex gap-2">
-                <button
-                  className={`btn-text text-sm ${!isAuthed ? "opacity-50" : ""}`}
-                  onClick={() => setStatus(r.id, "want")}
-                  title={!isAuthed ? "Log in to save" : ""}
-                  disabled={!isAuthed}
-                >
-                  Want
-                </button>
-                <button
-                  className={`btn-text text-sm ${!isAuthed ? "opacity-50" : ""}`}
-                  onClick={() => setStatus(r.id, "been")}
-                  title={!isAuthed ? "Log in to save" : ""}
-                  disabled={!isAuthed}
-                >
-                  Been
-                </button>
-              </div>
+      {/* Popular Races Section */}
+      <section className="space-y-6">
+        <h2
+          className="text-2xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          Popular Races
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {popularTop5.length > 0 ? (
+            popularTop5.map((race, i) => (
+              <Link
+                key={race.race_id}
+                href={race.slug ? `/races/${race.slug}` : "#"}
+                className="group card overflow-hidden hover:shadow-lg transition-all relative"
+              >
+                {/* Numbered Circle */}
+                <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">
+                  {i + 1}
+                </div>
+
+                {/* Image */}
+                <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                  {race.hero_image_url ? (
+                    <img
+                      src={race.hero_image_url}
+                      alt={race.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                      <svg
+                        className="w-16 h-16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Title */}
+                <div className="p-4 border-t border-[var(--border)]">
+                  <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors line-clamp-2">
+                    {race.name}
+                  </h3>
+                  {race.country && (
+                    <p className="text-sm text-[var(--secondary)]/60 mt-1">
+                      {race.country}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-full text-sm opacity-70 py-8 text-center">
+              No popular races yet.
             </div>
-          ))}
-
-          {filteredCatalog.length === 0 && <div className="p-3 text-sm opacity-70">No matching races</div>}
+          )}
         </div>
-
-        {!isAuthed && (
-          <div className="text-sm opacity-70">
-            Want/Been requires <Link className="btn-text" href="/login">login</Link>.
-          </div>
-        )}
       </section>
 
-      <section className="space-y-3">
-        <div className="font-semibold">Your list</div>
+      {/* Browse All Races Section */}
+      <section className="space-y-4">
+        <h2
+          className="text-xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          {query ? "Search Results" : "All Races"}
+        </h2>
 
-        {!isAuthed ? (
-          <p className="opacity-70">Log in to see your Want/Been list.</p>
-        ) : (
-          <>
-            {userRaces.map((ur) => {
-              const r = raceById(ur.race_id);
-              return (
-                <div key={ur.id} className="card p-3 flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    {r?.slug ? (
-                      <Link className="btn-text" href={`/races/${r.slug}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredCatalog.map((race) => (
+              <Link
+                key={race.id}
+                href={race.slug ? `/races/${race.slug}` : "#"}
+                className="group card overflow-hidden hover:shadow-lg transition-all relative"
+              >
+                {/* Image */}
+                <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                  {race.hero_image_url ? (
+                    <img
+                      src={race.hero_image_url}
+                      alt={race.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                      <svg
+                        className="w-16 h-16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Title */}
+                <div className="p-4 border-t border-[var(--border)]">
+                  <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors">
+                    {race.name}
+                  </h3>
+                  {race.country && (
+                    <p className="text-sm text-[var(--secondary)]/60 mt-1">
+                      {race.country}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {filteredCatalog.length === 0 && (
+            <div className="text-sm opacity-70 py-8 text-center">
+              {query ? "No matching races found." : "No races available."}
+            </div>
+          )}
+        </section>
+
+      {/* Your List Section */}
+      {isAuthed && (
+        <section className="space-y-4">
+          <h2
+            className="text-xl font-bold text-[var(--secondary)]"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            Your List
+          </h2>
+
+          {userRaces.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {userRaces.map((ur) => {
+                const r = raceById(ur.race_id);
+                if (!r) return null;
+                return (
+                  <div key={ur.id} className="card p-4 space-y-3">
+                    {r.slug ? (
+                      <Link
+                        href={`/races/${r.slug}`}
+                        className="font-semibold hover:text-[var(--primary)] transition-colors block"
+                      >
                         {r.name}
                         {r.country ? ` — ${r.country}` : ""}
                       </Link>
                     ) : (
-                      <span className="text-sm text-red-600">Missing slug</span>
+                      <span className="text-sm text-[var(--primary)]">
+                        Missing slug
+                      </span>
                     )}
-                    <span className="opacity-70"> — {ur.status}</span>
-                  </div>
-
-                  <div className="flex gap-3 shrink-0">
-                    {ur.status !== "want" && (
-                      <button className="btn-text text-sm" onClick={() => setStatus(ur.race_id, "want")}>
-                        Mark Want
+                    <span className="text-sm opacity-70 block">Status: {ur.status}</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {ur.status !== "want" && (
+                        <button
+                          className="btn-text text-xs"
+                          onClick={() => setStatus(ur.race_id, "want")}
+                        >
+                          Mark Want
+                        </button>
+                      )}
+                      {ur.status !== "been" && (
+                        <button
+                          className="btn-text text-xs"
+                          onClick={() => setStatus(ur.race_id, "been")}
+                        >
+                          Mark Been
+                        </button>
+                      )}
+                      <button
+                        className="btn-text text-xs"
+                        onClick={() => removeUserRace(ur.id)}
+                      >
+                        Remove
                       </button>
-                    )}
-                    {ur.status !== "been" && (
-                      <button className="btn-text text-sm" onClick={() => setStatus(ur.race_id, "been")}>
-                        Mark Been
-                      </button>
-                    )}
-                    <button className="btn-text text-sm" onClick={() => removeUserRace(ur.id)}>
-                      Remove
-                    </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          ) : (
+            <p className="opacity-70">No races in your list yet.</p>
+          )}
+        </section>
+      )}
 
-            {userRaces.length === 0 && <p className="opacity-70">No races yet.</p>}
-          </>
-        )}
-      </section>
+      {!isAuthed && (
+        <div className="text-sm opacity-70 text-center py-4">
+          <Link href="/login" className="btn-text">
+            Log in
+          </Link>{" "}
+          to save races to your Want/Been list.
+        </div>
+      )}
     </main>
   );
 }

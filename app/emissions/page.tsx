@@ -50,10 +50,11 @@ export default function EmissionsPage() {
   const [distance, setDistance] = useState<string>("");
   const [passengers, setPassengers] = useState<string>("1");
   const [selectedModes, setSelectedModes] = useState<Set<TransportMode>>(
-    new Set(["flight", "rail", "car", "coach"])
+    new Set(["flight", "coach"])
   );
   const [carFuelType, setCarFuelType] = useState<CarFuelType>("petrol");
   const [results, setResults] = useState<EmissionResult[]>([]);
+  const [expandedMode, setExpandedMode] = useState<TransportMode | null>(null);
 
   function toggleMode(mode: TransportMode) {
     const newSet = new Set(selectedModes);
@@ -131,108 +132,241 @@ export default function EmissionsPage() {
   const best = getBestOption();
 
   return (
-    <main className="space-y-6 max-w-4xl">
+    <main className="space-y-8 max-w-4xl">
       <BackHome />
 
-      <div>
-        <h1 className="text-3xl font-bold">Carbon Emissions Comparison</h1>
-        <p className="text-sm opacity-80 mt-2">
-          Provide comparative travel emissions estimates for different transport modes.
-          <br />
-          <span className="italic">This tool is informational only, not an official carbon reporting system.</span>
-        </p>
-      </div>
+      {/* Page Title */}
+      <h1
+        className="text-4xl font-bold text-center text-[var(--secondary)]"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
+        Emissions Calculator
+      </h1>
 
-      <form onSubmit={handleSubmit} className="card p-6 space-y-5">
-        <div className="space-y-2">
-          <label htmlFor="distance" className="block font-semibold text-sm">
-            Distance (km) <span className="text-red-600">*</span>
-          </label>
-          <input
-            id="distance"
-            type="number"
-            step="0.1"
-            min="0"
-            className="border p-2 w-full"
-            placeholder="e.g. 500"
-            value={distance}
-            onChange={(e) => setDistance(e.target.value)}
-            required
-          />
-        </div>
+      <form onSubmit={handleSubmit} className="card p-8 space-y-8">
+        {/* Trip Details Section */}
+        <div className="space-y-6">
+          <h2
+            className="text-xl font-bold text-[var(--secondary)]"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            Trip details
+          </h2>
 
-        <div className="space-y-2">
-          <label className="block font-semibold text-sm">
-            Transport Modes to Compare <span className="text-red-600">*</span>
-          </label>
-          <div className="flex flex-wrap gap-3">
-            {Object.entries(MODE_INFO).map(([mode, info]) => (
-              <label
-                key={mode}
-                className={`flex items-center gap-2 px-4 py-2 border rounded-lg cursor-pointer transition-colors ${
-                  selectedModes.has(mode as TransportMode)
-                    ? "border-[var(--accent)] bg-red-50 dark:bg-red-950/20"
-                    : "border-[var(--border)] hover:border-[var(--border-hover)]"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedModes.has(mode as TransportMode)}
-                  onChange={() => toggleMode(mode as TransportMode)}
-                  className="cursor-pointer"
-                />
-                <span className="text-lg">{info.icon}</span>
-                <span className="text-sm font-medium">{info.label}</span>
-              </label>
-            ))}
+          {/* Modes Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-[var(--secondary)]/80 uppercase tracking-wide">
+              Modes
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {Object.entries(MODE_INFO).map(([mode, info]) => {
+                const isSelected = selectedModes.has(mode as TransportMode);
+                const isExpanded = expandedMode === mode;
+                const isCar = mode === "car";
+
+                return (
+                  <div key={mode} className="relative">
+                    <label
+                      className={`card p-5 cursor-pointer transition-all relative min-h-[140px] flex flex-col ${
+                        isSelected
+                          ? "border-2 border-[var(--primary)] bg-[var(--primary)]/5 shadow-sm"
+                          : "border border-[var(--border)] hover:border-[var(--primary)]/30 hover:shadow-sm"
+                      }`}
+                    >
+                      {/* Header Row - Checkbox and Arrow */}
+                      <div className="flex items-start justify-between mb-4">
+                        {/* Custom Checkbox - Top Left */}
+                        <div className="flex-shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleMode(mode as TransportMode)}
+                            className="sr-only"
+                          />
+                          <div
+                            className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all cursor-pointer ${
+                              isSelected
+                                ? "border-[var(--primary)] bg-[var(--primary)] shadow-sm"
+                                : "border-[var(--secondary)]/30 bg-white hover:border-[var(--primary)]/50"
+                            }`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleMode(mode as TransportMode);
+                            }}
+                          >
+                            {isSelected && (
+                              <svg
+                                className="w-3 h-3 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={3}
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Downward Arrow - Top Right */}
+                        {isCar && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setExpandedMode(isExpanded ? null : (mode as TransportMode));
+                            }}
+                            className={`flex-shrink-0 p-1 rounded transition-all ${
+                              isExpanded
+                                ? "text-[var(--primary)] bg-[var(--primary)]/10"
+                                : "text-[var(--secondary)]/40 hover:text-[var(--secondary)]/60 hover:bg-[var(--secondary)]/5"
+                            }`}
+                          >
+                            <svg
+                              className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 9l-7 7-7-7"
+                              />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Icon and Label - Centered */}
+                      <div className="flex flex-col items-center justify-center gap-3 flex-1">
+                        <span className="text-4xl">{info.icon}</span>
+                        <span
+                          className={`text-sm font-semibold transition-colors ${
+                            isSelected
+                              ? "text-[var(--primary)]"
+                              : "text-[var(--secondary)]"
+                          }`}
+                        >
+                          {info.label}
+                        </span>
+                      </div>
+                    </label>
+
+                    {/* Car Fuel Type Dropdown */}
+                    {isCar && isExpanded && (
+                      <div className="absolute top-full left-0 right-0 mt-2 card p-4 z-10 bg-white border-2 border-[var(--primary)]/20 shadow-lg">
+                        <label className="block text-xs font-semibold text-[var(--secondary)] mb-2 uppercase tracking-wide">
+                          Fuel Type
+                        </label>
+                        <select
+                          className="border-2 border-[var(--border)] p-2.5 w-full rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all"
+                          value={carFuelType}
+                          onChange={(e) => setCarFuelType(e.target.value as CarFuelType)}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {CAR_FUEL_TYPES.map((fuel) => (
+                            <option key={fuel.value} value={fuel.value}>
+                              {fuel.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            {selectedModes.size === 0 && (
+              <p className="text-xs text-[var(--primary)]">Please select at least one transport mode.</p>
+            )}
           </div>
-          {selectedModes.size === 0 && (
-            <p className="text-xs text-red-600">Please select at least one transport mode.</p>
-          )}
-        </div>
 
-        {selectedModes.has("car") && (
+          {/* Number of People */}
           <div className="space-y-2">
-            <label htmlFor="carFuelType" className="block font-semibold text-sm">
-              Fuel Type (Car only)
+            <label htmlFor="passengers" className="flex items-center gap-2 text-sm font-semibold text-[var(--secondary)]">
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                />
+              </svg>
+              People
             </label>
-            <select
-              id="carFuelType"
-              className="border p-2 w-full"
-              value={carFuelType}
-              onChange={(e) => setCarFuelType(e.target.value as CarFuelType)}
-            >
-              {CAR_FUEL_TYPES.map((fuel) => (
-                <option key={fuel.value} value={fuel.value}>
-                  {fuel.label}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <input
+                id="passengers"
+                type="number"
+                min="1"
+                className="border border-[var(--border)] p-2 rounded-lg flex-1"
+                value={passengers}
+                onChange={(e) => setPassengers(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setPassengers(String(Math.max(1, parseInt(passengers) - 1)))}
+                className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--secondary)]/5"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPassengers(String(parseInt(passengers) + 1))}
+                className="p-2 border border-[var(--border)] rounded-lg hover:bg-[var(--secondary)]/5"
+              >
+                <svg className="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
-        )}
 
-        <div className="space-y-2">
-          <label htmlFor="passengers" className="block font-semibold text-sm">
-            Number of People Travelling <span className="text-red-600">*</span>
-          </label>
-          <input
-            id="passengers"
-            type="number"
-            min="1"
-            className="border p-2 w-full"
-            placeholder="1"
-            value={passengers}
-            onChange={(e) => setPassengers(e.target.value)}
-            required
-          />
+          {/* Distance */}
+          <div className="space-y-2">
+            <label htmlFor="distance" className="block text-sm font-semibold text-[var(--secondary)]">
+              Distance
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="distance"
+                type="number"
+                step="0.1"
+                min="0"
+                className="border border-[var(--border)] p-2 rounded-lg flex-1"
+                placeholder="0"
+                value={distance}
+                onChange={(e) => setDistance(e.target.value)}
+                required
+              />
+              <span className="text-sm text-[var(--secondary)]/60 font-medium">km</span>
+            </div>
+          </div>
         </div>
 
+        {/* Calculate Button */}
         <button
           type="submit"
-          className="btn-primary px-6 py-2"
+          className="w-full py-4 bg-[var(--primary)] text-white font-bold text-lg rounded-lg hover:bg-[var(--accent-hover)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
           disabled={selectedModes.size === 0}
         >
-          Calculate Emissions
+          CALCULATE
         </button>
       </form>
 

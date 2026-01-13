@@ -47,6 +47,7 @@ export default function MomentsPage() {
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [showForm, setShowForm] = useState(false);
 
   // edit state
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -67,6 +68,7 @@ export default function MomentsPage() {
     setBody("");
     setSelectedFolderId("none");
     setFiles([]);
+    setShowForm(false);
   }
 
   function startEdit(m: MomentRow) {
@@ -77,6 +79,7 @@ export default function MomentsPage() {
     setSelectedFolderId(m.folder_id ?? "none");
     setEntryDate(m.entry_date ?? entryDate);
     setFiles([]);
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -308,120 +311,228 @@ export default function MomentsPage() {
   }, []);
 
   return (
-    <main className="space-y-4">
+    <main className="space-y-8">
       <BackHome />
 
-      <h1 className="text-2xl font-bold">Moments</h1>
-
-      <div className="card p-4 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="font-semibold">{editingId ? "Edit entry" : "New entry"}</div>
-
-          {editingId && (
-            <button className="btn-text text-sm" onClick={resetFormToCreate} disabled={saving}>
-              Cancel edit
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 gap-2">
-          <label className="text-sm opacity-80">Entry date</label>
-          <input
-            className="border p-2 w-full"
-            type="date"
-            value={entryDate}
-            onChange={(e) => setEntryDate(e.target.value)}
-          />
-        </div>
-
-        <input
-          className="border p-2 w-full"
-          placeholder="Title (e.g., 'Silverstone weekend')"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-
-        <textarea
-          className="border p-2 w-full min-h-[160px]"
-          placeholder="Write your journal entry..."
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-        />
-
-        <select
-          className="border p-2 w-full"
-          value={selectedFolderId}
-          onChange={(e) =>
-            setSelectedFolderId(e.target.value === "none" ? "none" : Number(e.target.value))
-          }
+      {/* Page Title */}
+      <div className="space-y-2">
+        <h1
+          className="text-3xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
         >
-          <option value="none">No folder</option>
-          {folders.map((f) => (
-            <option key={f.id} value={f.id}>
-              {f.name}
-            </option>
-          ))}
-        </select>
-
-        <div className="space-y-1">
-          <label className="text-sm opacity-80">Photos {editingId ? "(optional: add more)" : ""}</label>
-          <input
-            className="border p-2 w-full rounded-md"
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-          />
-          <div className="text-xs opacity-70">{fileLabel}</div>
-        </div>
-
-        <button className="btn-primary px-4 py-2" onClick={saveMoment} disabled={saving}>
-          {saving ? "Saving..." : editingId ? "Save changes" : "Save entry"}
-        </button>
-
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+          MY DIARY
+        </h1>
+        <div className="border-t border-[var(--border)]"></div>
       </div>
 
-      <div className="space-y-3">
+      {/* Add New Moment Button */}
+      <button
+        onClick={() => {
+          if (editingId) {
+            resetFormToCreate();
+          } else {
+            setShowForm(!showForm);
+          }
+        }}
+        className="w-full card p-6 flex items-center justify-center gap-3 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
+      >
+        <span className="text-3xl font-bold text-[var(--primary)] group-hover:scale-110 transition-transform">
+          +
+        </span>
+        <span className="text-lg font-semibold text-[var(--secondary)]">
+          Add new moment
+        </span>
+      </button>
+
+      {/* Form Section (Collapsible) */}
+      {showForm && (
+        <div className="card p-6 space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div
+              className="font-semibold text-lg text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              {editingId ? "Edit entry" : "New entry"}
+            </div>
+
+            <button
+              className="btn-text text-sm"
+              onClick={resetFormToCreate}
+              disabled={saving}
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2">
+            <label className="text-sm opacity-80">Entry date</label>
+            <input
+              className="border border-[var(--border)] p-2 w-full rounded-lg"
+              type="date"
+              value={entryDate}
+              onChange={(e) => setEntryDate(e.target.value)}
+            />
+          </div>
+
+          <input
+            className="border border-[var(--border)] p-2 w-full rounded-lg"
+            placeholder="Title (e.g., 'Silverstone weekend')"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+
+          <textarea
+            className="border border-[var(--border)] p-2 w-full min-h-[160px] rounded-lg"
+            placeholder="Write your journal entry..."
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+          />
+
+          <select
+            className="border border-[var(--border)] p-2 w-full rounded-lg"
+            value={selectedFolderId}
+            onChange={(e) =>
+              setSelectedFolderId(e.target.value === "none" ? "none" : Number(e.target.value))
+            }
+          >
+            <option value="none">No folder</option>
+            {folders.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name}
+              </option>
+            ))}
+          </select>
+
+          <div className="space-y-1">
+            <label className="text-sm opacity-80">
+              Photos {editingId ? "(optional: add more)" : ""}
+            </label>
+            <input
+              className="border border-[var(--border)] p-2 w-full rounded-lg"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+            />
+            <div className="text-xs opacity-70">{fileLabel}</div>
+          </div>
+
+          <button
+            className="btn-primary px-4 py-2 w-full"
+            onClick={saveMoment}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : editingId ? "Save changes" : "Save entry"}
+          </button>
+
+          {error && <p className="text-[var(--primary)] text-sm">{error}</p>}
+        </div>
+      )}
+
+      {/* Diary Entries */}
+      <div className="space-y-6">
         {moments.map((m) => {
           const urls = photoUrlsByMoment[m.id] ?? [];
+          const displayDate = m.entry_date
+            ? new Date(m.entry_date).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : new Date(m.created_at).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+
           return (
-            <div key={m.id} className="card p-4 space-y-2">
-              <div className="flex items-baseline justify-between gap-4">
-                <div className="font-semibold">{m.title ?? "Untitled"}</div>
-                <div className="text-xs opacity-60">
-                  {m.entry_date ? m.entry_date : new Date(m.created_at).toLocaleString()}
+            <div key={m.id} className="card overflow-hidden">
+              <div className="flex flex-col md:flex-row gap-0">
+                {/* Photo Section (Left) */}
+                <div className="md:w-48 w-full h-48 md:h-auto bg-[var(--secondary)]/5 flex items-center justify-center shrink-0">
+                  {urls.length > 0 ? (
+                    <img
+                      src={urls[0]}
+                      alt="Moment photo"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="text-[var(--secondary)]/30">
+                      <svg
+                        className="w-16 h-16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                  )}
                 </div>
-              </div>
 
-              {m.body && <div className="text-sm whitespace-pre-wrap opacity-90">{m.body}</div>}
+                {/* Details Section (Right) */}
+                <div className="flex-1 p-6 space-y-3">
+                  <div className="space-y-1">
+                    <h3
+                      className="text-xl font-bold text-[var(--secondary)]"
+                      style={{ fontFamily: "var(--font-space-grotesk)" }}
+                    >
+                      {m.title ?? "Untitled"}
+                    </h3>
+                    <p className="text-sm text-[var(--secondary)]/60">{displayDate}</p>
+                  </div>
 
-              {urls.length > 0 && (
-                <div className="flex gap-2 overflow-x-auto">
-                  {urls.map((u, idx) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img key={idx} src={u} alt="Moment photo" className="h-28 rounded-md border border-[var(--border)]" />
-                  ))}
+                  {m.body && (
+                    <div className="text-sm text-[var(--secondary)]/80 whitespace-pre-wrap leading-relaxed">
+                      {m.body}
+                    </div>
+                  )}
+
+                  {urls.length > 1 && (
+                    <div className="flex gap-2 overflow-x-auto pt-2">
+                      {urls.slice(1).map((u, idx) => (
+                        <img
+                          key={idx}
+                          src={u}
+                          alt="Moment photo"
+                          className="h-20 rounded-md border border-[var(--border)] shrink-0"
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="pt-2 flex gap-4 border-t border-[var(--border)]">
+                    <button
+                      className="btn-text text-sm"
+                      onClick={() => startEdit(m)}
+                      disabled={saving}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="btn-text-danger text-sm"
+                      onClick={() => deleteMoment(m.id)}
+                      disabled={saving}
+                    >
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              )}
-
-              <div className="pt-2 flex gap-4">
-                <button className="btn-text text-sm" onClick={() => startEdit(m)} disabled={saving}>
-                  Edit
-                </button>
-                <button
-                  className="btn-text-danger text-sm"
-                  onClick={() => deleteMoment(m.id)}
-                  disabled={saving}
-                >
-                  Delete
-                </button>
               </div>
             </div>
           );
         })}
 
-        {moments.length === 0 && <p className="opacity-70">No entries yet.</p>}
+        {moments.length === 0 && (
+          <div className="text-center py-12 text-[var(--secondary)]/60">
+            <p>No entries yet. Click "Add new moment" to get started.</p>
+          </div>
+        )}
       </div>
     </main>
   );

@@ -73,14 +73,9 @@ export default async function TrackSustainabilityGuide({
       {topTips.length > 0 && (
         <div className="space-y-2">
           <h3 className="font-semibold text-lg">Top Tips</h3>
-          <ul className="space-y-2">
-            {topTips.map((tip, index) => (
-              <li key={index} className="flex items-start gap-2 text-sm">
-                <span className="text-green-600 dark:text-green-400 mt-0.5">•</span>
-                <span className="opacity-90">{tip}</span>
-              </li>
-            ))}
-          </ul>
+          <div className="text-sm opacity-90 whitespace-pre-wrap">
+            {Array.isArray(topTips) ? topTips.join("\n\n") : topTips}
+          </div>
         </div>
       )}
 

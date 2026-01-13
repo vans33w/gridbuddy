@@ -46,63 +46,144 @@ export default async function TrackDetailBySlugPage(props: any) {
     .maybeSingle();
 
   return (
-    <main className="space-y-4 max-w-2xl">
-      <Link className="btn-text text-sm" href="/tracks">
+    <main className="space-y-8">
+      <Link className="btn-text text-sm inline-block" href="/tracks">
         ← Back to Tracks
       </Link>
 
-      <h1 className="text-3xl font-bold">
+      {/* Track Name */}
+      <h1
+        className="text-4xl font-bold text-[var(--secondary)]"
+        style={{ fontFamily: "var(--font-space-grotesk)" }}
+      >
         {track.name} {track.country ? `— ${track.country}` : ""}
       </h1>
 
+      {/* Main Photo */}
       {track.hero_image_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={track.hero_image_url}
-          alt={track.name}
-          className="w-full card"
-        />
+        <div className="w-full">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={track.hero_image_url}
+            alt={track.name}
+            className="w-full h-auto rounded-lg object-cover"
+          />
+        </div>
       )}
 
-      <div className="card p-4 space-y-1">
-        <div className="font-semibold">Track details</div>
-        <div className="text-sm opacity-80">City: {track.city ?? "—"}</div>
-        <div className="text-sm opacity-80">
-          Length (km): {track.length_km ?? "—"}
-        </div>
-        <div className="text-sm opacity-80">Turns: {track.turns ?? "—"}</div>
-        <div className="text-sm opacity-80">
-          Lap record: {track.lap_record ?? "—"}
-        </div>
-        <div className="text-sm opacity-80">
-          Website:{" "}
-          {track.website ? (
-            <a className="btn-text" href={track.website} target="_blank">
-              Open
-            </a>
-          ) : (
-            "—"
-          )}
+      {/* Description and Details Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Description Column (Left, 2 columns) */}
+        <div className="lg:col-span-2 space-y-6">
+          <div>
+            <h2
+              className="text-xl font-bold mb-4 text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Description
+            </h2>
+            {track.description ? (
+              <div className="text-[var(--secondary)]/80 leading-relaxed whitespace-pre-line">
+                {track.description}
+              </div>
+            ) : (
+              <p className="text-[var(--secondary)]/60 italic">
+                No description available.
+              </p>
+            )}
+          </div>
+
+          {/* Sustainability Guide */}
+          <div>
+            <h2
+              className="text-xl font-bold mb-4 text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Sustainability Guide
+            </h2>
+            <TrackSustainabilityGuide trackId={track.id} />
+          </div>
         </div>
 
-        {track.description && (
-          <div className="text-sm opacity-80">{track.description}</div>
-        )}
+        {/* Details Column (Right, 1 column) */}
+        <div className="space-y-6">
+          <div className="card p-6 space-y-4">
+            <h3
+              className="font-semibold text-lg text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Details
+            </h3>
+            <div className="space-y-3 text-sm">
+              {track.length_km && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">Length:</span>{" "}
+                  <span className="text-[var(--secondary)]/80">{track.length_km} km</span>
+                </div>
+              )}
+              {track.turns && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">Turns:</span>{" "}
+                  <span className="text-[var(--secondary)]/80">{track.turns}</span>
+                </div>
+              )}
+              {track.lap_record && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">Lap Record:</span>{" "}
+                  <span className="text-[var(--secondary)]/80">{track.lap_record}</span>
+                </div>
+              )}
+              {track.city && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">City:</span>{" "}
+                  <span className="text-[var(--secondary)]/80">{track.city}</span>
+                </div>
+              )}
+              {track.website && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">Website:</span>{" "}
+                  <a
+                    className="btn-text text-sm"
+                    href={track.website}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Visit
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="card p-6 space-y-4">
+            <h3
+              className="font-semibold text-lg text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Popularity
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="font-medium text-[var(--secondary)]/70">Total picks:</span>{" "}
+                <span className="text-[var(--secondary)]/80">{pop?.total_picks ?? 0}</span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--secondary)]/70">Want:</span>{" "}
+                <span className="text-[var(--secondary)]/80">{pop?.want_picks ?? 0}</span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--secondary)]/70">Been:</span>{" "}
+                <span className="text-[var(--secondary)]/80">{pop?.been_picks ?? 0}</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="card p-4 space-y-1">
-        <div className="font-semibold">Popularity</div>
-        <div className="text-sm opacity-80">
-          Total picks: {pop?.total_picks ?? 0}
-        </div>
-        <div className="text-sm opacity-80">
-          Want: {pop?.want_picks ?? 0} • Been: {pop?.been_picks ?? 0}
-        </div>
+      {/* Comments Section */}
+      <div className="mt-8">
+        <Comments entityType="track" entityId={track.id} />
       </div>
-
-      <TrackSustainabilityGuide trackId={track.id} />
-
-      <Comments entityType="track" entityId={track.id} />
     </main>
   );
 }

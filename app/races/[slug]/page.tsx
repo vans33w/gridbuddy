@@ -83,72 +83,149 @@ export default async function RaceDetailPage(props: any) {
   }
 
   return (
-    <main className="space-y-4 max-w-2xl">
-      <Link className="btn-text text-sm" href="/races">
+    <main className="space-y-8">
+      <Link className="btn-text text-sm inline-block" href="/races">
         ← Back to Races
       </Link>
 
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold">
+      {/* Race Name */}
+      <div className="space-y-4">
+        <h1
+          className="text-4xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
           {race.name} {race.country ? `— ${race.country}` : ""}
         </h1>
 
-        <p className="text-sm opacity-70">
-          Browse as a guest. Log in to save Want/Been.
-        </p>
-
-        <MarkButtons raceId={race.id} initialStatus={myStatus} />
-      </div>
-
-      {race.hero_image_url && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={race.hero_image_url}
-          alt={race.name}
-          className="w-full card"
-        />
-      )}
-
-      <div className="card p-4 space-y-1">
-        <div className="font-semibold">Race details</div>
-        <div className="text-sm opacity-80">City: {race.city ?? "—"}</div>
-        <div className="text-sm opacity-80">
-          Circuit: {race.circuit_name ?? "—"}
-        </div>
-        <div className="text-sm opacity-80">
-          Website:{" "}
-          {race.official_website ? (
-            <a
-              className="btn-text"
-              href={race.official_website}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open
-            </a>
-          ) : (
-            "—"
+        <div className="flex items-center gap-4">
+          <MarkButtons raceId={race.id} initialStatus={myStatus} />
+          {!userId && (
+            <p className="text-sm text-[var(--secondary)]/60">
+              Log in to save Want/Been
+            </p>
           )}
         </div>
-
-        {race.description && (
-          <div className="text-sm opacity-80">{race.description}</div>
-        )}
       </div>
 
-      <div className="card p-4 space-y-1">
-        <div className="font-semibold">Popularity</div>
-        <div className="text-sm opacity-80">
-          Total picks: {pop?.total_picks ?? 0}
+      {/* Main Photo */}
+      {race.hero_image_url && (
+        <div className="w-full">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={race.hero_image_url}
+            alt={race.name}
+            className="w-full h-auto rounded-lg object-cover"
+          />
         </div>
-        <div className="text-sm opacity-80">
-          Want: {pop?.want_picks ?? 0} • Been: {pop?.been_picks ?? 0}
+      )}
+
+      {/* Description and Details Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Description Column (Left, 2 columns) */}
+        <div className="lg:col-span-2 space-y-6">
+          <div>
+            <h2
+              className="text-xl font-bold mb-4 text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Description
+            </h2>
+            {race.description ? (
+              <div className="text-[var(--secondary)]/80 leading-relaxed whitespace-pre-line">
+                {race.description}
+              </div>
+            ) : (
+              <p className="text-[var(--secondary)]/60 italic">
+                No description available.
+              </p>
+            )}
+          </div>
+
+          {/* Sustainability Guide */}
+          <div>
+            <h2
+              className="text-xl font-bold mb-4 text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Sustainability Guide
+            </h2>
+            <RaceSustainabilityGuide raceId={race.id} />
+          </div>
+        </div>
+
+        {/* Details Column (Right, 1 column) */}
+        <div className="space-y-6">
+          <div className="card p-6 space-y-4">
+            <h3
+              className="font-semibold text-lg text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Details
+            </h3>
+            <div className="space-y-3 text-sm">
+              {race.circuit_name && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">Circuit:</span>{" "}
+                  <span className="text-[var(--secondary)]/80">{race.circuit_name}</span>
+                </div>
+              )}
+              {race.city && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">City:</span>{" "}
+                  <span className="text-[var(--secondary)]/80">{race.city}</span>
+                </div>
+              )}
+              {race.country && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">Country:</span>{" "}
+                  <span className="text-[var(--secondary)]/80">{race.country}</span>
+                </div>
+              )}
+              {race.official_website && (
+                <div>
+                  <span className="font-medium text-[var(--secondary)]/70">Website:</span>{" "}
+                  <a
+                    className="btn-text text-sm"
+                    href={race.official_website}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Visit
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="card p-6 space-y-4">
+            <h3
+              className="font-semibold text-lg text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Popularity
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="font-medium text-[var(--secondary)]/70">Total picks:</span>{" "}
+                <span className="text-[var(--secondary)]/80">{pop?.total_picks ?? 0}</span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--secondary)]/70">Want:</span>{" "}
+                <span className="text-[var(--secondary)]/80">{pop?.want_picks ?? 0}</span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--secondary)]/70">Been:</span>{" "}
+                <span className="text-[var(--secondary)]/80">{pop?.been_picks ?? 0}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <RaceSustainabilityGuide raceId={race.id} />
-
-      <Comments entityType="race" entityId={race.id} />
+      {/* Comments Section */}
+      <div className="mt-8">
+        <Comments entityType="race" entityId={race.id} />
+      </div>
     </main>
   );
 }
