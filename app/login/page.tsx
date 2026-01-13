@@ -80,7 +80,7 @@ export default function LoginPage() {
           {loading ? "Logging in…" : "Log in"}
         </button>
 
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className="text-[var(--primary)] text-sm">{error}</p>}
       </div>
 
       <p className="text-sm opacity-80">

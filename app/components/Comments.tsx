@@ -67,7 +67,7 @@ function Comment({
               {userId && (
                 <button
                   onClick={() => onReply(comment.id)}
-                  className="text-black dark:text-white hover:text-red-600 p-1 rounded transition-colors"
+                  className="text-black dark:text-white hover:text-[var(--primary)] p-1 rounded transition-colors"
                   title="Reply"
                 >
                   <svg
@@ -93,8 +93,8 @@ function Comment({
                 disabled={busy || !userId}
                 className={`flex items-center gap-1 text-sm px-2 py-1 rounded transition-colors ${
                   likedByUser
-                    ? "text-red-600"
-                    : "text-black dark:text-white hover:text-red-600"
+                    ? "text-[var(--primary)]"
+                    : "text-black dark:text-white hover:text-[var(--primary)]"
                 } ${!userId ? "opacity-50 cursor-not-allowed" : ""}`}
                 title={
                   !userId ? "Log in to like" : likedByUser ? "Unlike" : "Like"

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 
-type CatalogTrack = { id: number; slug: string | null; name: string; country: string | null };
+type CatalogTrack = { id: number; slug: string | null; name: string; country: string | null; hero_image_url: string | null };
 type UserTrack = { id: number; track_id: number; status: "been" | "want"; created_at: string };
 
 type PopularRow = {
@@ -13,6 +13,7 @@ type PopularRow = {
   slug: string | null;
   name: string;
   country: string | null;
+  hero_image_url: string | null;
   total_picks: number;
   want_picks: number;
   been_picks: number;
@@ -53,7 +54,7 @@ export default function TracksPage() {
     setError("");
     const { data, error } = await supabase
       .from("tracks_catalog")
-      .select("id,slug,name,country")
+      .select("id,slug,name,country,hero_image_url")
       .order("name");
 
     if (error) {
@@ -65,17 +66,42 @@ export default function TracksPage() {
 
   async function loadTop5() {
     setError("");
-    const { data, error } = await supabase
+    const { data: popData, error: popError } = await supabase
       .from("track_popularity")
       .select("track_id,slug,name,country,total_picks,want_picks,been_picks")
       .order("total_picks", { ascending: false })
-      .limit(5);
+      .limit(8);
 
-    if (error) {
-      setError(error.message);
+    if (popError) {
+      setError(popError.message);
       return;
     }
-    setPopularTop5((data as PopularRow[]) ?? []);
+
+    if (!popData || popData.length === 0) {
+      setPopularTop5([]);
+      return;
+    }
+
+    const trackIds = popData.map((p) => p.track_id);
+    const { data: tracks, error: tracksError } = await supabase
+      .from("tracks_catalog")
+      .select("id,hero_image_url")
+      .in("id", trackIds);
+
+    if (tracksError) {
+      setError(tracksError.message);
+      return;
+    }
+
+    const popularWithImages = popData.map((pop) => {
+      const track = tracks?.find((t) => t.id === pop.track_id);
+      return {
+        ...pop,
+        hero_image_url: track?.hero_image_url ?? null,
+      };
+    });
+
+    setPopularTop5(popularWithImages);
   }
 
   async function loadUserTracks() {
@@ -164,140 +190,244 @@ export default function TracksPage() {
   }, []);
 
   return (
-    <main className="space-y-6">
+    <main className="space-y-8">
       <BackHome />
 
-      <div>
-        <h1 className="text-2xl font-bold">Tracks</h1>
-        <p className="text-sm opacity-70">Browse as a guest. Log in to save Want/Been.</p>
-      </div>
-
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-
-      <section className="card p-4 space-y-3">
-        <div className="font-semibold">Top 5 Popular Tracks</div>
-
-        <div className="space-y-2">
-          {popularTop5.map((r, i) => (
-            <div key={r.track_id} className="border border-[var(--border)] rounded-lg p-3">
-              <div className="font-semibold">
-                {r.slug ? (
-                  <Link className="btn-text" href={`/tracks/${r.slug}`}>
-                    #{i + 1} {r.name} {r.country ? `— ${r.country}` : ""}
-                  </Link>
-                ) : (
-                  <span className="text-red-600">Missing slug for {r.name}</span>
-                )}
-              </div>
-              <div className="text-sm opacity-80">
-                Total: {r.total_picks} • Want: {r.want_picks} • Been: {r.been_picks}
-              </div>
-            </div>
-          ))}
-
-          {popularTop5.length === 0 && <div className="text-sm opacity-70">No popularity data yet.</div>}
+      {/* Search Bar */}
+      <div className="relative">
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--secondary)]/40">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
         </div>
-      </section>
-
-      <section className="card p-4 space-y-3">
-        <div className="font-semibold">Browse all tracks</div>
-
         <input
-          className="border p-2 w-full"
-          placeholder="Search (e.g. Silverstone)"
+          className="border border-[var(--border)] rounded-lg pl-10 pr-4 py-3 w-full focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent"
+          placeholder="Browse all tracks.."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
+      </div>
 
-        <div className="border border-[var(--border)] max-h-72 overflow-y-auto rounded-md">
-          {filteredCatalog.map((t) => (
-            <div key={t.id} className="flex items-center justify-between px-3 py-2 border-b border-[var(--border)] last:border-b-0">
-              {t.slug ? (
-                <Link className="btn-text" href={`/tracks/${t.slug}`}>
-                  {t.name}
-                  {t.country ? ` — ${t.country}` : ""}
-                </Link>
-              ) : (
-                <span className="text-sm text-red-600">Missing slug for: {t.name}</span>
-              )}
+      {error && <p className="text-[var(--primary)] text-sm">{error}</p>}
 
-              <div className="flex gap-2">
-                <button
-                  className={`btn-text text-sm ${!isAuthed ? "opacity-50" : ""}`}
-                  onClick={() => setStatus(t.id, "want")}
-                  title={!isAuthed ? "Log in to save" : ""}
-                  disabled={!isAuthed}
-                >
-                  Want
-                </button>
-                <button
-                  className={`btn-text text-sm ${!isAuthed ? "opacity-50" : ""}`}
-                  onClick={() => setStatus(t.id, "been")}
-                  title={!isAuthed ? "Log in to save" : ""}
-                  disabled={!isAuthed}
-                >
-                  Been
-                </button>
-              </div>
+      {/* Popular Tracks Section */}
+      <section className="space-y-6">
+        <h2
+          className="text-2xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          Popular Tracks
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {popularTop5.length > 0 ? (
+            popularTop5.map((track, i) => (
+              <Link
+                key={track.track_id}
+                href={track.slug ? `/tracks/${track.slug}` : "#"}
+                className="group card overflow-hidden hover:shadow-lg transition-all relative"
+              >
+                {/* Numbered Circle */}
+                <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">
+                  {i + 1}
+                </div>
+
+                {/* Image */}
+                <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                  {track.hero_image_url ? (
+                    <img
+                      src={track.hero_image_url}
+                      alt={track.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                      <svg
+                        className="w-16 h-16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Title */}
+                <div className="p-4 border-t border-[var(--border)]">
+                  <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors line-clamp-2">
+                    {track.name}
+                  </h3>
+                  {track.country && (
+                    <p className="text-sm text-[var(--secondary)]/60 mt-1">
+                      {track.country}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-full text-sm opacity-70 py-8 text-center">
+              No popular tracks yet.
             </div>
-          ))}
-
-          {filteredCatalog.length === 0 && <div className="p-3 text-sm opacity-70">No matching tracks</div>}
+          )}
         </div>
-
-        {!isAuthed && (
-          <div className="text-sm opacity-70">
-            Want/Been requires <Link className="btn-text" href="/login">login</Link>.
-          </div>
-        )}
       </section>
 
-      <section className="space-y-3">
-        <div className="font-semibold">Your list</div>
+      {/* Browse All Tracks Section */}
+      <section className="space-y-4">
+        <h2
+          className="text-xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          {query ? "Search Results" : "All Tracks"}
+        </h2>
 
-        {!isAuthed ? (
-          <p className="opacity-70">Log in to see your Want/Been list.</p>
-        ) : (
-          <>
-            {userTracks.map((ut) => {
-              const t = trackById(ut.track_id);
-              return (
-                <div key={ut.id} className="card p-3 flex items-center justify-between gap-4">
-                  <div className="min-w-0">
-                    {t?.slug ? (
-                      <Link className="btn-text" href={`/tracks/${t.slug}`}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredCatalog.map((track) => (
+              <Link
+                key={track.id}
+                href={track.slug ? `/tracks/${track.slug}` : "#"}
+                className="group card overflow-hidden hover:shadow-lg transition-all relative"
+              >
+                {/* Image */}
+                <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                  {track.hero_image_url ? (
+                    <img
+                      src={track.hero_image_url}
+                      alt={track.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                      <svg
+                        className="w-16 h-16"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                        />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+
+                {/* Title */}
+                <div className="p-4 border-t border-[var(--border)]">
+                  <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors">
+                    {track.name}
+                  </h3>
+                  {track.country && (
+                    <p className="text-sm text-[var(--secondary)]/60 mt-1">
+                      {track.country}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {filteredCatalog.length === 0 && (
+            <div className="text-sm opacity-70 py-8 text-center">
+              {query ? "No matching tracks found." : "No tracks available."}
+            </div>
+          )}
+        </section>
+
+      {/* Your List Section */}
+      {isAuthed && (
+        <section className="space-y-4">
+          <h2
+            className="text-xl font-bold text-[var(--secondary)]"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            Your List
+          </h2>
+
+          {userTracks.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {userTracks.map((ut) => {
+                const t = trackById(ut.track_id);
+                if (!t) return null;
+                return (
+                  <div key={ut.id} className="card p-4 space-y-3">
+                    {t.slug ? (
+                      <Link
+                        href={`/tracks/${t.slug}`}
+                        className="font-semibold hover:text-[var(--primary)] transition-colors block"
+                      >
                         {t.name}
                         {t.country ? ` — ${t.country}` : ""}
                       </Link>
                     ) : (
-                      <span className="text-sm text-red-600">Missing slug</span>
+                      <span className="text-sm text-[var(--primary)]">
+                        Missing slug
+                      </span>
                     )}
-                    <span className="opacity-70"> — {ut.status}</span>
-                  </div>
-
-                  <div className="flex gap-3 shrink-0">
-                    {ut.status !== "want" && (
-                      <button className="btn-text text-sm" onClick={() => setStatus(ut.track_id, "want")}>
-                        Mark Want
+                    <span className="text-sm opacity-70 block">Status: {ut.status}</span>
+                    <div className="flex gap-2 flex-wrap">
+                      {ut.status !== "want" && (
+                        <button
+                          className="btn-text text-xs"
+                          onClick={() => setStatus(ut.track_id, "want")}
+                        >
+                          Mark Want
+                        </button>
+                      )}
+                      {ut.status !== "been" && (
+                        <button
+                          className="btn-text text-xs"
+                          onClick={() => setStatus(ut.track_id, "been")}
+                        >
+                          Mark Been
+                        </button>
+                      )}
+                      <button
+                        className="btn-text text-xs"
+                        onClick={() => removeUserTrack(ut.id)}
+                      >
+                        Remove
                       </button>
-                    )}
-                    {ut.status !== "been" && (
-                      <button className="btn-text text-sm" onClick={() => setStatus(ut.track_id, "been")}>
-                        Mark Been
-                      </button>
-                    )}
-                    <button className="btn-text text-sm" onClick={() => removeUserTrack(ut.id)}>
-                      Remove
-                    </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+          ) : (
+            <p className="opacity-70">No tracks in your list yet.</p>
+          )}
+        </section>
+      )}
 
-            {userTracks.length === 0 && <p className="opacity-70">No tracks yet.</p>}
-          </>
-        )}
-      </section>
+      {!isAuthed && (
+        <div className="text-sm opacity-70 text-center py-4">
+          <Link href="/login" className="btn-text">
+            Log in
+          </Link>{" "}
+          to save tracks to your Want/Been list.
+        </div>
+      )}
     </main>
   );
 }

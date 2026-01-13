@@ -77,7 +77,7 @@ function EventCard({ event }: { event: EventRow }) {
           )}
         </div>
         <div className="text-right shrink-0">
-          <div className="text-lg font-mono font-bold text-red-600">
+          <div className="text-lg font-mono font-bold text-[var(--primary)]">
             {countdown}
           </div>
           <div className="text-xs opacity-70 mt-1">{formattedDate}</div>

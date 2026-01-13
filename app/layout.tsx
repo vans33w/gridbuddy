@@ -1,18 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import HeaderAuth from "./components/HeaderAuth";
 import Image from "next/image";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,13 +30,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white text-neutral-900`}
+        className={`${spaceGrotesk.variable} ${inter.variable} antialiased bg-white text-[var(--secondary)]`}
       >
         <header className="sticky top-0 z-50 border-b border-[var(--border)] bg-white/90 backdrop-blur">
           <div className="mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">
             <Link
               href="/"
-              className="font-bold text-lg tracking-tight text-red-600 hover:text-red-700 transition-colors flex items-center gap-2"
+              className="font-bold text-lg tracking-tight text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors flex items-center gap-2"
+              style={{ fontFamily: 'var(--font-space-grotesk)' }}
             >
               <Image src="/logo.png" alt="Grid Buddy" width={32} height={32} />
               Grid Buddy
@@ -42,8 +45,11 @@ export default function RootLayout({
 
             <div className="flex items-center gap-6">
               <nav className="flex flex-wrap gap-5 text-sm font-medium">
+                <Link href="/emissions" className="btn-text-danger">
+                  Emissions Calculator
+                </Link>
                 <Link href="/moments" className="btn-text-danger">
-                  Moments
+                  Diary
                 </Link>
                 <Link href="/tracks" className="btn-text-danger">
                   Tracks
@@ -52,7 +58,7 @@ export default function RootLayout({
                   Races
                 </Link>
                 <Link href="/bucket-list" className="btn-text-danger">
-                  My Bucket List
+                  Bucket List
                 </Link>
               </nav>
 
@@ -64,7 +70,7 @@ export default function RootLayout({
         <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
 
         <footer className="border-t border-[var(--border)] mt-16">
-          <div className="mx-auto max-w-5xl px-6 py-6 text-xs text-neutral-500">
+          <div className="mx-auto max-w-5xl px-6 py-6 text-xs opacity-60">
             © {new Date().getFullYear()} Grid Buddy
           </div>
         </footer>
