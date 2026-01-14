@@ -231,57 +231,88 @@ export default function TracksPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {popularTop5.length > 0 ? (
-            popularTop5.map((track, i) => (
-              <Link
-                key={track.track_id}
-                href={track.slug ? `/tracks/${track.slug}` : "#"}
-                className="group card overflow-hidden hover:shadow-lg transition-all relative"
-              >
-                {/* Numbered Circle */}
-                <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">
-                  {i + 1}
-                </div>
+            popularTop5.map((track, i) => {
+              const userTrack = userTracks.find((ut) => ut.track_id === track.track_id);
+              const currentStatus = userTrack?.status || null;
+              return (
+                <div
+                  key={track.track_id}
+                  className="group card overflow-hidden hover:shadow-lg transition-all relative"
+                >
+                  {/* Numbered Circle */}
+                  <div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-full bg-[var(--primary)] text-white flex items-center justify-center font-bold text-sm">
+                    {i + 1}
+                  </div>
 
-                {/* Image */}
-                <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
-                  {track.hero_image_url ? (
-                    <img
-                      src={track.hero_image_url}
-                      alt={track.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
-                      <svg
-                        className="w-16 h-16"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                  {/* Image */}
+                  <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
+                    <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                      {track.hero_image_url ? (
+                        <img
+                          src={track.hero_image_url}
+                          alt={track.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                      </svg>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                          <svg
+                            className="w-16 h-16"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                            />
+                          </svg>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </Link>
 
-                {/* Title */}
-                <div className="p-4 border-t border-[var(--border)]">
-                  <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors line-clamp-2">
-                    {track.name}
-                  </h3>
-                  {track.country && (
-                    <p className="text-sm text-[var(--secondary)]/60 mt-1">
-                      {track.country}
-                    </p>
-                  )}
+                  {/* Title and Buttons */}
+                  <div className="p-4 border-t border-[var(--border)] space-y-3">
+                    <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
+                      <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors line-clamp-2">
+                        {track.name}
+                      </h3>
+                      {track.country && (
+                        <p className="text-sm text-[var(--secondary)]/60 mt-1">
+                          {track.country}
+                        </p>
+                      )}
+                    </Link>
+                    {isAuthed && (
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          className={`btn-text text-xs ${currentStatus === "want" ? "opacity-50 cursor-not-allowed" : ""}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setStatus(track.track_id, "want");
+                          }}
+                          disabled={currentStatus === "want"}
+                        >
+                          {currentStatus === "want" ? "Want ✓" : "Want"}
+                        </button>
+                        <button
+                          className={`btn-text text-xs ${currentStatus === "been" ? "opacity-50 cursor-not-allowed" : ""}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setStatus(track.track_id, "been");
+                          }}
+                          disabled={currentStatus === "been"}
+                        >
+                          {currentStatus === "been" ? "Been ✓" : "Been"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </Link>
-            ))
+              );
+            })
           ) : (
             <div className="col-span-full text-sm opacity-70 py-8 text-center">
               No popular tracks yet.
@@ -300,52 +331,83 @@ export default function TracksPage() {
         </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredCatalog.map((track) => (
-              <Link
-                key={track.id}
-                href={track.slug ? `/tracks/${track.slug}` : "#"}
-                className="group card overflow-hidden hover:shadow-lg transition-all relative"
-              >
-                {/* Image */}
-                <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
-                  {track.hero_image_url ? (
-                    <img
-                      src={track.hero_image_url}
-                      alt={track.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
-                      <svg
-                        className="w-16 h-16"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+            {filteredCatalog.map((track) => {
+              const userTrack = userTracks.find((ut) => ut.track_id === track.id);
+              const currentStatus = userTrack?.status || null;
+              return (
+                <div
+                  key={track.id}
+                  className="group card overflow-hidden hover:shadow-lg transition-all relative"
+                >
+                  {/* Image */}
+                  <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
+                    <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                      {track.hero_image_url ? (
+                        <img
+                          src={track.hero_image_url}
+                          alt={track.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         />
-                      </svg>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                          <svg
+                            className="w-16 h-16"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                            />
+                          </svg>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  </Link>
 
-                {/* Title */}
-                <div className="p-4 border-t border-[var(--border)]">
-                  <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors">
-                    {track.name}
-                  </h3>
-                  {track.country && (
-                    <p className="text-sm text-[var(--secondary)]/60 mt-1">
-                      {track.country}
-                    </p>
-                  )}
+                  {/* Title and Buttons */}
+                  <div className="p-4 border-t border-[var(--border)] space-y-3">
+                    <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
+                      <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors">
+                        {track.name}
+                      </h3>
+                      {track.country && (
+                        <p className="text-sm text-[var(--secondary)]/60 mt-1">
+                          {track.country}
+                        </p>
+                      )}
+                    </Link>
+                    {isAuthed && (
+                      <div className="flex gap-2 flex-wrap">
+                        <button
+                          className={`btn-text text-xs ${currentStatus === "want" ? "opacity-50 cursor-not-allowed" : ""}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setStatus(track.id, "want");
+                          }}
+                          disabled={currentStatus === "want"}
+                        >
+                          {currentStatus === "want" ? "Want ✓" : "Want"}
+                        </button>
+                        <button
+                          className={`btn-text text-xs ${currentStatus === "been" ? "opacity-50 cursor-not-allowed" : ""}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setStatus(track.id, "been");
+                          }}
+                          disabled={currentStatus === "been"}
+                        >
+                          {currentStatus === "been" ? "Been ✓" : "Been"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
 
           {filteredCatalog.length === 0 && (

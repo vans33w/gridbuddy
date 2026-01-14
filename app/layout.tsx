@@ -41,10 +41,10 @@ export default function RootLayout({
           <div className="mx-auto max-w-5xl px-6 py-3 flex items-center justify-between">
             <Link
               href="/"
-              className="font-bold text-lg tracking-tight text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors flex items-center gap-2"
+              className="font-bold text-lg tracking-tight  text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors flex items-center gap-2"
               style={{ fontFamily: 'var(--font-space-grotesk)' }}
             >
-              <Image src="/logo1.png" alt="Grid Buddy" width={80} height={80} className="w-16 h-16 object-contain" />
+              <Image src="/logo1.png" alt="Grid Buddy" width={120} unoptimized height={120} className="w-40 object-cox" />
             </Link>
 
             <div className="flex items-center gap-6">

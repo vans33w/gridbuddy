@@ -19,9 +19,9 @@ export default function MobileHeader() {
           <Image
             src="/logo1.png"
             alt="Grid Buddy"
-            width={60}
-            height={60}
-            className="w-12 h-12 object-contain"
+            width={100}
+            height={100}
+            className="w-20 h-20 object-contain"
           />
         </Link>
 

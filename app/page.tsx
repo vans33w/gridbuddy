@@ -107,7 +107,7 @@ export default async function HomePage() {
           >
             Every race has a story.
           </h1>
-          <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--primary)]/80">
+          <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white">
             Plan your next one.
           </p>
         </div>
