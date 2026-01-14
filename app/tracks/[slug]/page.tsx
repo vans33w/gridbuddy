@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabaseServer } from "../../../lib/supabase/server";
+import MarkButtons from "./MarkButtons";
 import Comments from "../../components/Comments";
 import TrackSustainabilityGuide from "../../components/TrackSustainabilityGuide";
 
@@ -45,6 +46,21 @@ export default async function TrackDetailBySlugPage(props: any) {
     .eq("track_id", track.id)
     .maybeSingle();
 
+  const { data: userData } = await supabase.auth.getUser();
+  const userId = userData.user?.id ?? null;
+
+  let myStatus: "want" | "been" | null = null;
+  if (userId) {
+    const { data: ut } = await supabase
+      .from("user_tracks")
+      .select("status")
+      .eq("user_id", userId)
+      .eq("track_id", track.id)
+      .maybeSingle();
+
+    myStatus = (ut?.status as any) ?? null;
+  }
+
   return (
     <main className="space-y-8">
       <Link className="btn-text text-sm inline-block" href="/tracks">
@@ -52,12 +68,23 @@ export default async function TrackDetailBySlugPage(props: any) {
       </Link>
 
       {/* Track Name */}
-      <h1
-        className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--secondary)]"
-        style={{ fontFamily: "var(--font-space-grotesk)" }}
-      >
-        {track.name} {track.country ? `— ${track.country}` : ""}
-      </h1>
+      <div className="space-y-4">
+        <h1
+          className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          {track.name} {track.country ? `— ${track.country}` : ""}
+        </h1>
+
+        <div className="flex items-center gap-4">
+          <MarkButtons trackId={track.id} initialStatus={myStatus} />
+          {!userId && (
+            <p className="text-sm text-[var(--secondary)]/60">
+              Log in to save Want/Been
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Main Photo */}
       {track.hero_image_url && (
