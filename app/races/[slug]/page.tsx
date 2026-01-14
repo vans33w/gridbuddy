@@ -91,7 +91,7 @@ export default async function RaceDetailPage(props: any) {
       {/* Race Name */}
       <div className="space-y-4">
         <h1
-          className="text-4xl font-bold text-[var(--secondary)]"
+          className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--secondary)]"
           style={{ fontFamily: "var(--font-space-grotesk)" }}
         >
           {race.name} {race.country ? `— ${race.country}` : ""}
@@ -119,28 +119,10 @@ export default async function RaceDetailPage(props: any) {
         </div>
       )}
 
-      {/* Description and Details Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Description Column (Left, 2 columns) */}
+      {/* Sustainability Guide and Details Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+        {/* Sustainability Guide Column (Left, 2 columns) */}
         <div className="lg:col-span-2 space-y-6">
-          <div>
-            <h2
-              className="text-xl font-bold mb-4 text-[var(--secondary)]"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Description
-            </h2>
-            {race.description ? (
-              <div className="text-[var(--secondary)]/80 leading-relaxed whitespace-pre-line">
-                {race.description}
-              </div>
-            ) : (
-              <p className="text-[var(--secondary)]/60 italic">
-                No description available.
-              </p>
-            )}
-          </div>
-
           {/* Sustainability Guide */}
           <div>
             <h2

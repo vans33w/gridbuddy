@@ -311,13 +311,13 @@ export default function MomentsPage() {
   }, []);
 
   return (
-    <main className="space-y-8">
+    <main className="space-y-6 sm:space-y-8">
       <BackHome />
 
       {/* Page Title */}
       <div className="space-y-2">
         <h1
-          className="text-3xl font-bold text-[var(--secondary)]"
+          className="text-2xl sm:text-3xl font-bold text-[var(--secondary)]"
           style={{ fontFamily: "var(--font-space-grotesk)" }}
         >
           MY DIARY
@@ -346,7 +346,7 @@ export default function MomentsPage() {
 
       {/* Form Section (Collapsible) */}
       {showForm && (
-        <div className="card p-6 space-y-4">
+        <div className="card p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div
               className="font-semibold text-lg text-[var(--secondary)]"
@@ -430,7 +430,7 @@ export default function MomentsPage() {
       )}
 
       {/* Diary Entries */}
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {moments.map((m) => {
           const urls = photoUrlsByMoment[m.id] ?? [];
           const displayDate = m.entry_date
@@ -447,9 +447,9 @@ export default function MomentsPage() {
 
           return (
             <div key={m.id} className="card overflow-hidden">
-              <div className="flex flex-col md:flex-row gap-0">
+              <div className="flex flex-col sm:flex-row gap-0">
                 {/* Photo Section (Left) */}
-                <div className="md:w-48 w-full h-48 md:h-auto bg-[var(--secondary)]/5 flex items-center justify-center shrink-0">
+                <div className="sm:w-48 w-full h-48 sm:h-auto bg-[var(--secondary)]/5 flex items-center justify-center shrink-0">
                   {urls.length > 0 ? (
                     <img
                       src={urls[0]}
@@ -476,7 +476,7 @@ export default function MomentsPage() {
                 </div>
 
                 {/* Details Section (Right) */}
-                <div className="flex-1 p-6 space-y-3">
+                <div className="flex-1 p-4 sm:p-6 space-y-3">
                   <div className="space-y-1">
                     <h3
                       className="text-xl font-bold text-[var(--secondary)]"

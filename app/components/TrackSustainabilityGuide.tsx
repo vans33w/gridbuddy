@@ -34,21 +34,37 @@ export default async function TrackSustainabilityGuide({
 
   const guideData = guide as TrackSustainabilityGuide;
 
-  // Parse top_tips if it's a JSON string
-  let topTips: string[] = [];
+  // Parse top_tips - handle JSONB, JSON string, or plain text
+  let topTipsText: string | null = null;
   if (guideData.top_tips) {
     try {
-      topTips =
-        typeof guideData.top_tips === "string"
-          ? JSON.parse(guideData.top_tips)
-          : guideData.top_tips;
+      if (typeof guideData.top_tips === "string") {
+        // Try to parse as JSON first
+        try {
+          const parsed = JSON.parse(guideData.top_tips);
+          if (Array.isArray(parsed)) {
+            topTipsText = parsed.join("\n\n");
+          } else if (typeof parsed === "string") {
+            topTipsText = parsed;
+          }
+        } catch {
+          // If parsing fails, treat as plain text
+          topTipsText = guideData.top_tips;
+        }
+      } else if (Array.isArray(guideData.top_tips)) {
+        // Already an array from JSONB
+        topTipsText = guideData.top_tips.join("\n\n");
+      } else if (typeof guideData.top_tips === "object") {
+        // Handle object case
+        topTipsText = JSON.stringify(guideData.top_tips);
+      }
     } catch {
-      topTips = [];
+      topTipsText = null;
     }
   }
 
   const hasContent =
-    topTips.length > 0 ||
+    topTipsText ||
     guideData.public_transport_access ||
     guideData.distance_from_nearest_city ||
     guideData.bike_access_bike_parking ||
@@ -70,11 +86,11 @@ export default async function TrackSustainabilityGuide({
         </p>
       </div>
 
-      {topTips.length > 0 && (
+      {topTipsText && (
         <div className="space-y-2">
           <h3 className="font-semibold text-lg">Top Tips</h3>
           <div className="text-sm opacity-90 whitespace-pre-wrap">
-            {Array.isArray(topTips) ? topTips.join("\n\n") : topTips}
+            {topTipsText}
           </div>
         </div>
       )}

@@ -137,13 +137,13 @@ export default function EmissionsPage() {
 
       {/* Page Title */}
       <h1
-        className="text-4xl font-bold text-center text-[var(--secondary)]"
+        className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-[var(--secondary)]"
         style={{ fontFamily: "var(--font-space-grotesk)" }}
       >
         Emissions Calculator
       </h1>
 
-      <form onSubmit={handleSubmit} className="card p-8 space-y-8">
+      <form onSubmit={handleSubmit} className="card p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8">
         {/* Trip Details Section */}
         <div className="space-y-6">
           <h2
@@ -158,7 +158,7 @@ export default function EmissionsPage() {
             <h3 className="text-sm font-semibold text-[var(--secondary)]/80 uppercase tracking-wide">
               Modes
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {Object.entries(MODE_INFO).map(([mode, info]) => {
                 const isSelected = selectedModes.has(mode as TransportMode);
                 const isExpanded = expandedMode === mode;

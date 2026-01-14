@@ -190,7 +190,7 @@ export default function TracksPage() {
   }, []);
 
   return (
-    <main className="space-y-8">
+    <main className="space-y-6 sm:space-y-8">
       <BackHome />
 
       {/* Search Bar */}
@@ -221,9 +221,9 @@ export default function TracksPage() {
       {error && <p className="text-[var(--primary)] text-sm">{error}</p>}
 
       {/* Popular Tracks Section */}
-      <section className="space-y-6">
+      <section className="space-y-4 sm:space-y-6">
         <h2
-          className="text-2xl font-bold text-[var(--secondary)]"
+          className="text-xl sm:text-2xl font-bold text-[var(--secondary)]"
           style={{ fontFamily: "var(--font-space-grotesk)" }}
         >
           Popular Tracks

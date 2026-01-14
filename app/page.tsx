@@ -95,37 +95,95 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="space-y-16 max-w-7xl mx-auto w-full">
+    <div className="space-y-8 sm:space-y-12 md:space-y-16 max-w-7xl mx-auto w-full px-4 sm:px-6">
       {/* Hero Section */}
-      <section className="relative w-full h-[500px] flex items-center justify-center overflow-hidden rounded-2xl">
+      <section className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] flex items-center justify-center overflow-hidden rounded-lg md:rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/20 to-[var(--secondary)]/20 z-0" />
-        <Image src="/assets/4.jpg" alt="Hero Background" fill className="object-cover z-0" />
-        {/* <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23E10600" fill-opacity="0.05"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-30 z-0" /> */}
-        <div className="relative z-10 text-center px-6 pt-10">
+        <Image src="/assets/hero.jpeg" alt="Hero Background" fill className="object-cover z-0" />
+        <div className="relative z-10 text-center px-4 sm:px-6">
           <h1
-            className="text-5xl md:text-6xl font-bold mb-4 text-white"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 sm:mb-4 text-white"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             Every race has a story.
           </h1>
-          <p className="text-5xl md:text-6xl font-bold mb-4  text-primary/80">
+          <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-[var(--primary)]/80">
             Plan your next one.
           </p>
         </div>
       </section>
 
-      {/* TRACKS Section */}
+      {/* GRID BUDDY Features Section */}
       <section className="space-y-6">
-        <div className="flex items-center justify-between">
+        <h2
+          className="text-2xl font-bold text-[var(--secondary)]"
+          style={{ fontFamily: "var(--font-space-grotesk)" }}
+        >
+          GRID BUDDY LETS YOU...
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link
+            href="/emissions"
+            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
+          >
+            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
+              Calculate travel emissions.
+            </h3>
+            <p className="text-sm text-[var(--secondary)]/70">
+              Plan your journey with sustainability in mind.
+            </p>
+          </Link>
+
+          <Link
+            href="/moments"
+            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
+          >
+            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
+              Save Your Favourite Moments
+            </h3>
+            <p className="text-sm text-[var(--secondary)]/70">
+              Keep track of your motorsports diary.
+            </p>
+          </Link>
+
+          <Link
+            href="/bucket-list"
+            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
+          >
+            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
+              Track bucket lists.
+            </h3>
+            <p className="text-sm text-[var(--secondary)]/70">
+              Mark tracks and races you want to visit or have been to.
+            </p>
+          </Link>
+
+          <Link
+            href="/bucket-list"
+            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
+          >
+            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
+              Countdown to Events.
+            </h3>
+            <p className="text-sm text-[var(--secondary)]/70">
+              Never miss an important race or track event.
+            </p>
+          </Link>
+        </div>
+      </section>
+
+      {/* TRACKS Section */}
+      <section className="space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h2
-            className="text-3xl font-bold text-[var(--secondary)] underline underline-offset-4"
+            className="text-2xl sm:text-3xl font-bold text-[var(--secondary)] underline underline-offset-4"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             TRACKS
           </h2>
           <Link
             href="/tracks"
-            className="text-sm text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors underline underline-offset-2"
+            className="text-xs sm:text-sm text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors underline underline-offset-2 whitespace-nowrap"
           >
             View All →
           </Link>
@@ -197,17 +255,17 @@ export default async function HomePage() {
       </section>
 
       {/* RACES Section */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
+      <section className="space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h2
-            className="text-3xl font-bold text-[var(--secondary)] underline underline-offset-4"
+            className="text-2xl sm:text-3xl font-bold text-[var(--secondary)] underline underline-offset-4"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             RACES
           </h2>
           <Link
             href="/races"
-            className="text-sm text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors underline underline-offset-2"
+            className="text-xs sm:text-sm text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors underline underline-offset-2 whitespace-nowrap"
           >
             View All →
           </Link>
@@ -275,65 +333,6 @@ export default async function HomePage() {
               </>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* GRID BUDDY Features Section */}
-      <section className="space-y-6 pb-8">
-        <h2
-          className="text-2xl font-bold text-[var(--secondary)]"
-          style={{ fontFamily: "var(--font-space-grotesk)" }}
-        >
-          GRID BUDDY LETS YOU...
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Link
-            href="/emissions"
-            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
-          >
-            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Calculate travel emissions.
-            </h3>
-            <p className="text-sm text-[var(--secondary)]/70">
-              Plan your journey with sustainability in mind.
-            </p>
-          </Link>
-
-          <Link
-            href="/moments"
-            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
-          >
-            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Save Future Plans.
-            </h3>
-            <p className="text-sm text-[var(--secondary)]/70">
-              Keep track of your motorsport diary and moments.
-            </p>
-          </Link>
-
-          <Link
-            href="/bucket-list"
-            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
-          >
-            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Track bucket lists.
-            </h3>
-            <p className="text-sm text-[var(--secondary)]/70">
-              Mark tracks and races you want to visit or have been to.
-            </p>
-          </Link>
-
-          <Link
-            href="/bucket-list"
-            className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
-          >
-            <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Countdown to Events.
-            </h3>
-            <p className="text-sm text-[var(--secondary)]/70">
-              Never miss an important race or track event.
-            </p>
-          </Link>
         </div>
       </section>
       </div>
