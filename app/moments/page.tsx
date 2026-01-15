@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import BackHome from "../components/BackHome";
 import { useEffect, useMemo, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
@@ -16,6 +17,8 @@ type MomentRow = {
   folder_id: number | null;
   entry_date: string | null; // YYYY-MM-DD
   created_at: string;
+  track_id: number | null;
+  race_id: number | null;
 };
 
 type PhotoRow = {
@@ -44,6 +47,8 @@ export default function MomentsPage() {
 
   const [files, setFiles] = useState<File[]>([]);
   const [photoUrlsByMoment, setPhotoUrlsByMoment] = useState<Record<number, string[]>>({});
+  const [trackInfo, setTrackInfo] = useState<Record<number, { name: string; slug: string }>>({});
+  const [raceInfo, setRaceInfo] = useState<Record<number, { name: string; slug: string }>>({});
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -102,11 +107,28 @@ export default function MomentsPage() {
     try {
       await requireUser();
 
-      const { data, error } = await supabase
+      // Try to select with track_id and race_id, fallback if columns don't exist
+      let data, error;
+      const result = await supabase
         .from("moments")
-        .select("id,title,body,folder_id,entry_date,created_at")
+        .select("id,title,body,folder_id,entry_date,created_at,track_id,race_id")
         .order("entry_date", { ascending: false })
         .order("created_at", { ascending: false });
+      
+      data = result.data;
+      error = result.error;
+
+      // If columns don't exist, try without them
+      if (error && error.message.includes("column") && error.message.includes("does not exist")) {
+        const fallbackResult = await supabase
+          .from("moments")
+          .select("id,title,body,folder_id,entry_date,created_at")
+          .order("entry_date", { ascending: false })
+          .order("created_at", { ascending: false });
+        
+        data = fallbackResult.data;
+        error = fallbackResult.error;
+      }
 
       if (error) {
         setError(error.message);
@@ -116,6 +138,17 @@ export default function MomentsPage() {
       const rows = (data as MomentRow[]) ?? [];
       setMoments(rows);
       await loadPhotosForMoments(rows.map((m) => m.id));
+      
+      // Load track and race names for linked moments
+      const trackIds = rows.filter((m) => m.track_id).map((m) => m.track_id!);
+      const raceIds = rows.filter((m) => m.race_id).map((m) => m.race_id!);
+      
+      if (trackIds.length > 0) {
+        await loadTrackNames(trackIds);
+      }
+      if (raceIds.length > 0) {
+        await loadRaceNames(raceIds);
+      }
     } catch {}
   }
 
@@ -156,6 +189,40 @@ export default function MomentsPage() {
       map[s.moment_id] = map[s.moment_id] ? [...map[s.moment_id], s.url] : [s.url];
     }
     setPhotoUrlsByMoment(map);
+  }
+
+  async function loadTrackNames(trackIds: number[]) {
+    try {
+      const { data, error } = await supabase
+        .from("tracks_catalog")
+        .select("id,name,slug")
+        .in("id", trackIds);
+
+      if (error) return;
+
+      const map: Record<number, { name: string; slug: string }> = {};
+      (data ?? []).forEach((t: any) => {
+        map[t.id] = { name: t.name, slug: t.slug };
+      });
+      setTrackInfo(map);
+    } catch {}
+  }
+
+  async function loadRaceNames(raceIds: number[]) {
+    try {
+      const { data, error } = await supabase
+        .from("races_catalog")
+        .select("id,name,slug")
+        .in("id", raceIds);
+
+      if (error) return;
+
+      const map: Record<number, { name: string; slug: string }> = {};
+      (data ?? []).forEach((r: any) => {
+        map[r.id] = { name: r.name, slug: r.slug };
+      });
+      setRaceInfo(map);
+    } catch {}
   }
 
   async function uploadPhotos(userId: string, momentId: number, uploadFiles: File[]) {
@@ -490,6 +557,30 @@ export default function MomentsPage() {
                   {m.body && (
                     <div className="text-sm text-[var(--secondary)]/80 whitespace-pre-wrap leading-relaxed">
                       {m.body}
+                    </div>
+                  )}
+
+                  {/* Linked Track or Race */}
+                  {(m.track_id || m.race_id) && (
+                    <div className="text-sm space-y-1">
+                      {m.track_id && trackInfo[m.track_id] && (
+                        <Link
+                          href={`/tracks/${trackInfo[m.track_id].slug}`}
+                          className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
+                        >
+                          <span>📍 Track:</span>
+                          <span className="font-medium">{trackInfo[m.track_id].name}</span>
+                        </Link>
+                      )}
+                      {m.race_id && raceInfo[m.race_id] && (
+                        <Link
+                          href={`/races/${raceInfo[m.race_id].slug}`}
+                          className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
+                        >
+                          <span>🏁 Race:</span>
+                          <span className="font-medium">{raceInfo[m.race_id].name}</span>
+                        </Link>
+                      )}
                     </div>
                   )}
 
