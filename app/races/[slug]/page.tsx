@@ -100,14 +100,7 @@ export default async function RaceDetailPage(props: any) {
 
         <div className="flex flex-wrap items-center gap-4">
           <MarkButtons raceId={race.id} initialStatus={myStatus} />
-          {userId && (
-            <AddToMoment raceId={race.id} raceName={race.name} />
-          )}
-          {!userId && (
-            <p className="text-sm text-[var(--secondary)]/60">
-              Log in to save Want/Been
-            </p>
-          )}
+          <AddToMoment raceId={race.id} raceName={race.name} />
         </div>
       </div>
 
