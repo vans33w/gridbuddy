@@ -92,7 +92,7 @@ export default function AddToMoment({
   return (
     <div className="space-y-2">
       <button
-        className="btn-secondary px-4 py-2 text-sm"
+        className="btn-primary px-4 py-2 text-sm font-medium"
         onClick={handleAddToMoment}
         disabled={loading}
       >
