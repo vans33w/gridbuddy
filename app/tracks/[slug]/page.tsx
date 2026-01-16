@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabaseServer } from "../../../lib/supabase/server";
 import MarkButtons from "./MarkButtons";
+import AddToMoment from "../../components/AddToMoment";
 import Comments from "../../components/Comments";
 import TrackSustainabilityGuide from "../../components/TrackSustainabilityGuide";
 
@@ -76,8 +77,11 @@ export default async function TrackDetailBySlugPage(props: any) {
           {track.name} {track.country ? `— ${track.country}` : ""}
         </h1>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <MarkButtons trackId={track.id} initialStatus={myStatus} />
+          {userId && (
+            <AddToMoment trackId={track.id} trackName={track.name} />
+          )}
           {!userId && (
             <p className="text-sm text-[var(--secondary)]/60">
               Log in to save Want/Been

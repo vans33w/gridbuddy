@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "../../../lib/supabase/server";
 import MarkButtons from "./MarkButtons";
+import AddToMoment from "../../components/AddToMoment";
 import Comments from "../../components/Comments";
 import RaceSustainabilityGuide from "../../components/RaceSustainabilityGuide";
 
@@ -97,8 +98,11 @@ export default async function RaceDetailPage(props: any) {
           {race.name} {race.country ? `— ${race.country}` : ""}
         </h1>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <MarkButtons raceId={race.id} initialStatus={myStatus} />
+          {userId && (
+            <AddToMoment raceId={race.id} raceName={race.name} />
+          )}
           {!userId && (
             <p className="text-sm text-[var(--secondary)]/60">
               Log in to save Want/Been

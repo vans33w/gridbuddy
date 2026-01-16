@@ -97,7 +97,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-8 sm:space-y-12 md:space-y-16 max-w-7xl mx-auto w-full px-4 sm:px-6">
       {/* Hero Section */}
-      <section className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] flex items-center justify-center overflow-hidden rounded-lg md:rounded-2xl">
+      <section className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] flex lg:items-center py-10 lg:py-0 justify-center overflow-hidden rounded-lg md:rounded-2xl">
         <div className="absolute inset-0 bg-gradient-to-br from-[var(--primary)]/20 to-[var(--secondary)]/20 z-0" />
         <Image src="/assets/hero2.jpeg" alt="Hero Background" fill className="object-cover z-0" />
         <div className="relative z-10 text-center px-4 sm:px-6 lg:mb-40">
