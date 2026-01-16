@@ -79,14 +79,7 @@ export default async function TrackDetailBySlugPage(props: any) {
 
         <div className="flex flex-wrap items-center gap-4">
           <MarkButtons trackId={track.id} initialStatus={myStatus} />
-          {userId && (
-            <AddToMoment trackId={track.id} trackName={track.name} />
-          )}
-          {!userId && (
-            <p className="text-sm text-[var(--secondary)]/60">
-              Log in to save Want/Been
-            </p>
-          )}
+          <AddToMoment trackId={track.id} trackName={track.name} />
         </div>
       </div>
 
