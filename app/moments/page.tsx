@@ -57,6 +57,11 @@ export default function MomentsPage() {
   // edit state
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  // folder creation state
+  const [showNewFolderForm, setShowNewFolderForm] = useState(false);
+  const [newFolderName, setNewFolderName] = useState("");
+  const [creatingFolder, setCreatingFolder] = useState(false);
+
   async function requireUser() {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw new Error(error.message);
@@ -100,6 +105,36 @@ export default function MomentsPage() {
       if (error) setError(error.message);
       setFolders((data as FolderRow[]) ?? []);
     } catch {}
+  }
+
+  async function createFolder() {
+    if (creatingFolder || !newFolderName.trim()) return;
+    setError("");
+    setCreatingFolder(true);
+
+    try {
+      const user = await requireUser();
+      const { data, error: insertError } = await supabase
+        .from("folders")
+        .insert({
+          user_id: user.id,
+          name: newFolderName.trim(),
+        })
+        .select("id,name")
+        .single();
+
+      if (insertError) throw new Error(insertError.message);
+
+      // Add the new folder to the list and select it
+      setFolders((prev) => [data as FolderRow, ...prev]);
+      setSelectedFolderId((data as FolderRow).id);
+      setNewFolderName("");
+      setShowNewFolderForm(false);
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to create folder");
+    } finally {
+      setCreatingFolder(false);
+    }
   }
 
   async function loadMoments() {
@@ -455,20 +490,77 @@ export default function MomentsPage() {
             onChange={(e) => setBody(e.target.value)}
           />
 
-          <select
-            className="border border-[var(--border)] p-2 w-full rounded-lg"
-            value={selectedFolderId}
-            onChange={(e) =>
-              setSelectedFolderId(e.target.value === "none" ? "none" : Number(e.target.value))
-            }
-          >
-            <option value="none">No folder</option>
-            {folders.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.name}
-              </option>
-            ))}
-          </select>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-sm opacity-80">Folder</label>
+              {!showNewFolderForm && (
+                <button
+                  type="button"
+                  className="btn-text text-xs"
+                  onClick={() => setShowNewFolderForm(true)}
+                  disabled={creatingFolder}
+                >
+                  + Add new folder
+                </button>
+              )}
+            </div>
+
+            {showNewFolderForm && (
+              <div className="flex gap-2 items-center">
+                <input
+                  className="border border-[var(--border)] p-2 flex-1 rounded-lg text-sm"
+                  placeholder="Folder name"
+                  value={newFolderName}
+                  onChange={(e) => setNewFolderName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      createFolder();
+                    }
+                    if (e.key === "Escape") {
+                      setShowNewFolderForm(false);
+                      setNewFolderName("");
+                    }
+                  }}
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  className="btn-primary px-3 py-2 text-sm whitespace-nowrap"
+                  onClick={createFolder}
+                  disabled={creatingFolder || !newFolderName.trim()}
+                >
+                  {creatingFolder ? "Creating..." : "Create"}
+                </button>
+                <button
+                  type="button"
+                  className="btn-text text-sm px-2"
+                  onClick={() => {
+                    setShowNewFolderForm(false);
+                    setNewFolderName("");
+                  }}
+                  disabled={creatingFolder}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+
+            <select
+              className="border border-[var(--border)] p-2 w-full rounded-lg"
+              value={selectedFolderId}
+              onChange={(e) =>
+                setSelectedFolderId(e.target.value === "none" ? "none" : Number(e.target.value))
+              }
+            >
+              <option value="none">No folder</option>
+              {folders.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <div className="space-y-1">
             <label className="text-sm opacity-80">
