@@ -62,6 +62,16 @@ export default function MomentsPage() {
   const [newFolderName, setNewFolderName] = useState("");
   const [creatingFolder, setCreatingFolder] = useState(false);
 
+  // track and race selection state
+  const [selectedTrackId, setSelectedTrackId] = useState<number | null>(null);
+  const [selectedRaceId, setSelectedRaceId] = useState<number | null>(null);
+  const [tracks, setTracks] = useState<Array<{ id: number; name: string; country: string | null }>>([]);
+  const [races, setRaces] = useState<Array<{ id: number; name: string; country: string | null }>>([]);
+  const [trackSearchQuery, setTrackSearchQuery] = useState("");
+  const [raceSearchQuery, setRaceSearchQuery] = useState("");
+  const [showTrackDropdown, setShowTrackDropdown] = useState(false);
+  const [showRaceDropdown, setShowRaceDropdown] = useState(false);
+
   async function requireUser() {
     const { data, error } = await supabase.auth.getUser();
     if (error) throw new Error(error.message);
@@ -77,6 +87,10 @@ export default function MomentsPage() {
     setTitle("");
     setBody("");
     setSelectedFolderId("none");
+    setSelectedTrackId(null);
+    setSelectedRaceId(null);
+    setTrackSearchQuery("");
+    setRaceSearchQuery("");
     setFiles([]);
     setShowForm(false);
   }
@@ -87,6 +101,10 @@ export default function MomentsPage() {
     setTitle(m.title ?? "");
     setBody(m.body ?? "");
     setSelectedFolderId(m.folder_id ?? "none");
+    setSelectedTrackId(m.track_id ?? null);
+    setSelectedRaceId(m.race_id ?? null);
+    setTrackSearchQuery("");
+    setRaceSearchQuery("");
     setEntryDate(m.entry_date ?? entryDate);
     setFiles([]);
     setShowForm(true);
@@ -260,6 +278,40 @@ export default function MomentsPage() {
     } catch {}
   }
 
+  async function loadTracks() {
+    try {
+      const { data, error } = await supabase
+        .from("tracks_catalog")
+        .select("id,name,country")
+        .order("name");
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      setTracks((data ?? []) as Array<{ id: number; name: string; country: string | null }>);
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to load tracks");
+    }
+  }
+
+  async function loadRaces() {
+    try {
+      const { data, error } = await supabase
+        .from("races_catalog")
+        .select("id,name,country")
+        .order("name");
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+      setRaces((data ?? []) as Array<{ id: number; name: string; country: string | null }>);
+    } catch (e: any) {
+      setError(e?.message ?? "Failed to load races");
+    }
+  }
+
   async function uploadPhotos(userId: string, momentId: number, uploadFiles: File[]) {
     if (uploadFiles.length === 0) return;
 
@@ -293,18 +345,49 @@ export default function MomentsPage() {
 
       // EDIT
       if (editingId) {
+        const updateData: any = {
+          folder_id: selectedFolderId === "none" ? null : selectedFolderId,
+          title: title || null,
+          body: body || null,
+          entry_date: entryDate || null,
+        };
+        
+        // Add track_id and race_id if columns exist
+        if (selectedTrackId !== null) {
+          updateData.track_id = selectedTrackId;
+        } else {
+          updateData.track_id = null;
+        }
+        if (selectedRaceId !== null) {
+          updateData.race_id = selectedRaceId;
+        } else {
+          updateData.race_id = null;
+        }
+
         const { error: updateErr } = await supabase
           .from("moments")
-          .update({
-            folder_id: selectedFolderId === "none" ? null : selectedFolderId,
-            title: title || null,
-            body: body || null,
-            entry_date: entryDate || null,
-          })
+          .update(updateData)
           .eq("id", editingId)
           .eq("user_id", user.id);
 
-        if (updateErr) throw new Error(updateErr.message);
+        if (updateErr) {
+          // If columns don't exist, try without them
+          if (updateErr.message.includes("column") && updateErr.message.includes("does not exist")) {
+            const { error: updateErr2 } = await supabase
+              .from("moments")
+              .update({
+                folder_id: selectedFolderId === "none" ? null : selectedFolderId,
+                title: title || null,
+                body: body || null,
+                entry_date: entryDate || null,
+              })
+              .eq("id", editingId)
+              .eq("user_id", user.id);
+            if (updateErr2) throw new Error(updateErr2.message);
+          } else {
+            throw new Error(updateErr.message);
+          }
+        }
 
         // Optional: append new photos while editing
         await uploadPhotos(user.id, editingId, files);
@@ -315,19 +398,51 @@ export default function MomentsPage() {
       }
 
       // CREATE
+      const insertData: any = {
+        user_id: user.id,
+        folder_id: selectedFolderId === "none" ? null : selectedFolderId,
+        title: title || null,
+        body: body || null,
+        entry_date: entryDate || null,
+      };
+      
+      // Add track_id and race_id if selected
+      if (selectedTrackId !== null) {
+        insertData.track_id = selectedTrackId;
+      }
+      if (selectedRaceId !== null) {
+        insertData.race_id = selectedRaceId;
+      }
+
       const { data: created, error: insertErr } = await supabase
         .from("moments")
-        .insert({
-          user_id: user.id,
-          folder_id: selectedFolderId === "none" ? null : selectedFolderId,
-          title: title || null,
-          body: body || null,
-          entry_date: entryDate || null,
-        })
+        .insert(insertData)
         .select("id")
         .single();
 
-      if (insertErr) throw new Error(insertErr.message);
+      if (insertErr) {
+        // If columns don't exist, try without them
+        if (insertErr.message.includes("column") && insertErr.message.includes("does not exist")) {
+          const { data: created2, error: insertErr2 } = await supabase
+            .from("moments")
+            .insert({
+              user_id: user.id,
+              folder_id: selectedFolderId === "none" ? null : selectedFolderId,
+              title: title || null,
+              body: body || null,
+              entry_date: entryDate || null,
+            })
+            .select("id")
+            .single();
+          if (insertErr2) throw new Error(insertErr2.message);
+          const momentId = created2?.id as number;
+          await uploadPhotos(user.id, momentId, files);
+          resetFormToCreate();
+          await loadMoments();
+          return;
+        }
+        throw new Error(insertErr.message);
+      }
       const momentId = created?.id as number;
 
       await uploadPhotos(user.id, momentId, files);
@@ -406,9 +521,40 @@ export default function MomentsPage() {
     return `${files.length} photos selected`;
   }, [files, editingId]);
 
+  // Filter tracks and races based on search queries
+  const filteredTracks = useMemo(() => {
+    if (!trackSearchQuery.trim()) return tracks;
+    const query = trackSearchQuery.toLowerCase();
+    return tracks.filter(
+      (t) =>
+        t.name.toLowerCase().includes(query) ||
+        (t.country && t.country.toLowerCase().includes(query))
+    );
+  }, [tracks, trackSearchQuery]);
+
+  const filteredRaces = useMemo(() => {
+    if (!raceSearchQuery.trim()) return races;
+    const query = raceSearchQuery.toLowerCase();
+    return races.filter(
+      (r) =>
+        r.name.toLowerCase().includes(query) ||
+        (r.country && r.country.toLowerCase().includes(query))
+    );
+  }, [races, raceSearchQuery]);
+
+  // Get selected track/race names for display
+  const selectedTrackName = selectedTrackId
+    ? tracks.find((t) => t.id === selectedTrackId)?.name
+    : null;
+  const selectedRaceName = selectedRaceId
+    ? races.find((r) => r.id === selectedRaceId)?.name
+    : null;
+
   useEffect(() => {
     loadFolders();
     loadMoments();
+    loadTracks();
+    loadRaces();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -474,6 +620,159 @@ export default function MomentsPage() {
               value={entryDate}
               onChange={(e) => setEntryDate(e.target.value)}
             />
+          </div>
+
+          {/* Track and Race Selection */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Select Race Dropdown */}
+            <div className="relative race-dropdown-container">
+              <label className="text-sm opacity-80 block mb-2">Select race (optional)</label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRaceDropdown(!showRaceDropdown);
+                    setShowTrackDropdown(false);
+                  }}
+                  className="w-full border border-[var(--border)] p-2 rounded-lg text-left flex items-center justify-between bg-white hover:border-[var(--primary)]/30 transition-colors"
+                >
+                  <span className={selectedRaceName ? "text-[var(--secondary)]" : "text-[var(--secondary)]/50"}>
+                    {selectedRaceName || "Select race..."}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-[var(--secondary)]/50 transition-transform ${showRaceDropdown ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showRaceDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--border)] rounded-lg shadow-lg max-h-60 overflow-hidden">
+                    <div className="p-2 border-b border-[var(--border)]">
+                      <input
+                        type="text"
+                        placeholder="Search races..."
+                        value={raceSearchQuery}
+                        onChange={(e) => setRaceSearchQuery(e.target.value)}
+                        className="w-full border border-[var(--border)] p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedRaceId(null);
+                          setShowRaceDropdown(false);
+                          setRaceSearchQuery("");
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm"
+                      >
+                        None
+                      </button>
+                      {filteredRaces.length > 0 ? (
+                        filteredRaces.map((race) => (
+                          <button
+                            key={race.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedRaceId(race.id);
+                              setShowRaceDropdown(false);
+                              setRaceSearchQuery("");
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm ${
+                              selectedRaceId === race.id ? "bg-[var(--primary)]/10 font-medium" : ""
+                            }`}
+                          >
+                            {race.name}
+                            {race.country && <span className="text-[var(--secondary)]/60 ml-2">— {race.country}</span>}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-sm text-[var(--secondary)]/60">No races found</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Select Track Dropdown */}
+            <div className="relative track-dropdown-container">
+              <label className="text-sm opacity-80 block mb-2">Select track (optional)</label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowTrackDropdown(!showTrackDropdown);
+                    setShowRaceDropdown(false);
+                  }}
+                  className="w-full border border-[var(--border)] p-2 rounded-lg text-left flex items-center justify-between bg-white hover:border-[var(--primary)]/30 transition-colors"
+                >
+                  <span className={selectedTrackName ? "text-[var(--secondary)]" : "text-[var(--secondary)]/50"}>
+                    {selectedTrackName || "Select track..."}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-[var(--secondary)]/50 transition-transform ${showTrackDropdown ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showTrackDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--border)] rounded-lg shadow-lg max-h-60 overflow-hidden">
+                    <div className="p-2 border-b border-[var(--border)]">
+                      <input
+                        type="text"
+                        placeholder="Search tracks..."
+                        value={trackSearchQuery}
+                        onChange={(e) => setTrackSearchQuery(e.target.value)}
+                        className="w-full border border-[var(--border)] p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedTrackId(null);
+                          setShowTrackDropdown(false);
+                          setTrackSearchQuery("");
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm"
+                      >
+                        None
+                      </button>
+                      {filteredTracks.length > 0 ? (
+                        filteredTracks.map((track) => (
+                          <button
+                            key={track.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedTrackId(track.id);
+                              setShowTrackDropdown(false);
+                              setTrackSearchQuery("");
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm ${
+                              selectedTrackId === track.id ? "bg-[var(--primary)]/10 font-medium" : ""
+                            }`}
+                          >
+                            {track.name}
+                            {track.country && <span className="text-[var(--secondary)]/60 ml-2">— {track.country}</span>}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-sm text-[var(--secondary)]/60">No tracks found</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           <input
