@@ -623,82 +623,7 @@ export default function MomentsPage() {
           </div>
 
           {/* Track and Race Selection */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Select Race Dropdown */}
-            <div className="relative race-dropdown-container">
-              <label className="text-sm opacity-80 block mb-2">Select race (optional)</label>
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowRaceDropdown(!showRaceDropdown);
-                    setShowTrackDropdown(false);
-                  }}
-                  className="w-full border border-[var(--border)] p-2 rounded-lg text-left flex items-center justify-between bg-white hover:border-[var(--primary)]/30 transition-colors"
-                >
-                  <span className={selectedRaceName ? "text-[var(--secondary)]" : "text-[var(--secondary)]/50"}>
-                    {selectedRaceName || "Select race..."}
-                  </span>
-                  <svg
-                    className={`w-4 h-4 text-[var(--secondary)]/50 transition-transform ${showRaceDropdown ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                {showRaceDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--border)] rounded-lg shadow-lg max-h-60 overflow-hidden">
-                    <div className="p-2 border-b border-[var(--border)]">
-                      <input
-                        type="text"
-                        placeholder="Search races..."
-                        value={raceSearchQuery}
-                        onChange={(e) => setRaceSearchQuery(e.target.value)}
-                        className="w-full border border-[var(--border)] p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                        autoFocus
-                      />
-                    </div>
-                    <div className="max-h-48 overflow-y-auto">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setSelectedRaceId(null);
-                          setShowRaceDropdown(false);
-                          setRaceSearchQuery("");
-                        }}
-                        className="w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm"
-                      >
-                        None
-                      </button>
-                      {filteredRaces.length > 0 ? (
-                        filteredRaces.map((race) => (
-                          <button
-                            key={race.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedRaceId(race.id);
-                              setShowRaceDropdown(false);
-                              setRaceSearchQuery("");
-                            }}
-                            className={`w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm ${
-                              selectedRaceId === race.id ? "bg-[var(--primary)]/10 font-medium" : ""
-                            }`}
-                          >
-                            {race.name}
-                            {race.country && <span className="text-[var(--secondary)]/60 ml-2">— {race.country}</span>}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-4 py-2 text-sm text-[var(--secondary)]/60">No races found</div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
+          <div className="space-y-4">
             {/* Select Track Dropdown */}
             <div className="relative track-dropdown-container">
               <label className="text-sm opacity-80 block mb-2">Select track (optional)</label>
@@ -767,6 +692,81 @@ export default function MomentsPage() {
                         ))
                       ) : (
                         <div className="px-4 py-2 text-sm text-[var(--secondary)]/60">No tracks found</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Select Race Dropdown */}
+            <div className="relative race-dropdown-container">
+              <label className="text-sm opacity-80 block mb-2">Select race (optional)</label>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRaceDropdown(!showRaceDropdown);
+                    setShowTrackDropdown(false);
+                  }}
+                  className="w-full border border-[var(--border)] p-2 rounded-lg text-left flex items-center justify-between bg-white hover:border-[var(--primary)]/30 transition-colors"
+                >
+                  <span className={selectedRaceName ? "text-[var(--secondary)]" : "text-[var(--secondary)]/50"}>
+                    {selectedRaceName || "Select race..."}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 text-[var(--secondary)]/50 transition-transform ${showRaceDropdown ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {showRaceDropdown && (
+                  <div className="absolute z-10 w-full mt-1 bg-white border border-[var(--border)] rounded-lg shadow-lg max-h-60 overflow-hidden">
+                    <div className="p-2 border-b border-[var(--border)]">
+                      <input
+                        type="text"
+                        placeholder="Search races..."
+                        value={raceSearchQuery}
+                        onChange={(e) => setRaceSearchQuery(e.target.value)}
+                        className="w-full border border-[var(--border)] p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedRaceId(null);
+                          setShowRaceDropdown(false);
+                          setRaceSearchQuery("");
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm"
+                      >
+                        None
+                      </button>
+                      {filteredRaces.length > 0 ? (
+                        filteredRaces.map((race) => (
+                          <button
+                            key={race.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedRaceId(race.id);
+                              setShowRaceDropdown(false);
+                              setRaceSearchQuery("");
+                            }}
+                            className={`w-full text-left px-4 py-2 hover:bg-[var(--border-hover)] transition-colors text-sm ${
+                              selectedRaceId === race.id ? "bg-[var(--primary)]/10 font-medium" : ""
+                            }`}
+                          >
+                            {race.name}
+                            {race.country && <span className="text-[var(--secondary)]/60 ml-2">— {race.country}</span>}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="px-4 py-2 text-sm text-[var(--secondary)]/60">No races found</div>
                       )}
                     </div>
                   </div>
