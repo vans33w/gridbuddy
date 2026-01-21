@@ -953,11 +953,11 @@ export default function MomentsPage() {
 
                   {/* Linked Track or Race */}
                   {(m.track_id || m.race_id) && (
-                    <div className="text-sm space-y-1">
+                    <div className="text-sm flex flex-col gap-1">
                       {m.track_id && trackInfo[m.track_id] && (
                         <Link
                           href={`/tracks/${trackInfo[m.track_id].slug}`}
-                          className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
+                          className="flex items-center gap-1 text-[var(--primary)] hover:underline"
                         >
                           <span>📍 Track:</span>
                           <span className="font-medium">{trackInfo[m.track_id].name}</span>
@@ -966,7 +966,7 @@ export default function MomentsPage() {
                       {m.race_id && raceInfo[m.race_id] && (
                         <Link
                           href={`/races/${raceInfo[m.race_id].slug}`}
-                          className="inline-flex items-center gap-1 text-[var(--primary)] hover:underline"
+                          className="flex items-center gap-1 text-[var(--primary)] hover:underline"
                         >
                           <span>🏁 Race:</span>
                           <span className="font-medium">{raceInfo[m.race_id].name}</span>
