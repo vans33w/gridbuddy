@@ -5,6 +5,7 @@ import "./globals.css";
 import HeaderAuth from "./components/HeaderAuth";
 import MobileHeader from "./components/MobileHeader";
 import Image from "next/image";
+import { Analytics } from "@vercel/analytics/next";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -78,6 +79,7 @@ export default function RootLayout({
             © {new Date().getFullYear()} Grid Buddy
           </div>
         </footer>
+        <Analytics />
       </body>
     </html>
   );
