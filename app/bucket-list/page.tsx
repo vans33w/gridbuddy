@@ -51,9 +51,6 @@ export default async function BucketListPage() {
     <main className="space-y-8">
       <div className="space-y-1">
         <h1 className="text-2xl font-bold">My Bucket List</h1>
-        <p className="text-sm opacity-70">
-          Edit Want/Been here directly (no need to go back to Tracks/Races).
-        </p>
       </div>
 
       <PicksClient initialTracks={initialTracks} initialRaces={initialRaces} />

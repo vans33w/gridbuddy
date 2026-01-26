@@ -24,7 +24,6 @@ function EventCard({
 
   useEffect(() => {
     const eventDate = new Date(event.event_date);
-    const now = new Date();
 
     const updateCountdown = () => {
       const now = new Date();
@@ -36,25 +35,19 @@ function EventCard({
       }
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
-      );
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      if (days > 0) {
-        setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-      } else if (hours > 0) {
-        setCountdown(`${hours}h ${minutes}m ${seconds}s`);
-      } else if (minutes > 0) {
-        setCountdown(`${minutes}m ${seconds}s`);
+      
+      if (days === 0) {
+        setCountdown("Today");
+      } else if (days === 1) {
+        setCountdown("1 day");
       } else {
-        setCountdown(`${seconds}s`);
+        setCountdown(`${days} days`);
       }
     };
 
     updateCountdown();
-    const interval = setInterval(updateCountdown, 1000); // Update every second
+    // Update once per day since we're only showing days
+    const interval = setInterval(updateCountdown, 1000 * 60 * 60); // Update every hour
 
     return () => clearInterval(interval);
   }, [event.event_date]);

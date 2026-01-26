@@ -5,12 +5,6 @@ type RaceSustainabilityGuide = {
   race_id: number;
   top_tips: string[] | null;
   spectator_travel_options: string | null;
-  shuttle_park_and_ride: string | null;
-  temporary_infrastructure_scale: string | null;
-  power_sources_race_weekend: string | null;
-  plant_based_food_availability: string | null;
-  recycling_during_event: string | null;
-  water_refill_stations_race_weekend: string | null;
   public_sustainability_commitments: string | null;
 };
 
@@ -25,7 +19,7 @@ export default async function RaceSustainabilityGuide({
 
   const { data: guide, error } = await supabase
     .from("race_sustainability_guides")
-    .select("*")
+    .select("id,race_id,top_tips,spectator_travel_options,public_sustainability_commitments")
     .eq("race_id", raceId)
     .maybeSingle();
 
@@ -67,12 +61,6 @@ export default async function RaceSustainabilityGuide({
   const hasContent =
     topTipsText ||
     guideData.spectator_travel_options ||
-    guideData.shuttle_park_and_ride ||
-    guideData.temporary_infrastructure_scale ||
-    guideData.power_sources_race_weekend ||
-    guideData.plant_based_food_availability ||
-    guideData.recycling_during_event ||
-    guideData.water_refill_stations_race_weekend ||
     guideData.public_sustainability_commitments;
 
   if (!hasContent) {
@@ -99,63 +87,9 @@ export default async function RaceSustainabilityGuide({
 
       {guideData.spectator_travel_options && (
         <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Typical Spectator Travel Options</h3>
+          <h3 className="font-semibold text-lg">Spectator Travel Options</h3>
           <div className="text-sm opacity-90 whitespace-pre-wrap">
             {guideData.spectator_travel_options}
-          </div>
-        </div>
-      )}
-
-      {guideData.shuttle_park_and_ride && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Shuttle or Park-and-Ride Services</h3>
-          <div className="text-sm opacity-90 whitespace-pre-wrap">
-            {guideData.shuttle_park_and_ride}
-          </div>
-        </div>
-      )}
-
-      {guideData.temporary_infrastructure_scale && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Temporary Infrastructure Scale</h3>
-          <div className="text-sm opacity-90 whitespace-pre-wrap">
-            {guideData.temporary_infrastructure_scale}
-          </div>
-        </div>
-      )}
-
-      {guideData.power_sources_race_weekend && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Power Sources During Race Weekend</h3>
-          <div className="text-sm opacity-90 whitespace-pre-wrap">
-            {guideData.power_sources_race_weekend}
-          </div>
-        </div>
-      )}
-
-      {guideData.plant_based_food_availability && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Plant-Based Food Availability</h3>
-          <div className="text-sm opacity-90 whitespace-pre-wrap">
-            {guideData.plant_based_food_availability}
-          </div>
-        </div>
-      )}
-
-      {guideData.recycling_during_event && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Recycling During the Event</h3>
-          <div className="text-sm opacity-90 whitespace-pre-wrap">
-            {guideData.recycling_during_event}
-          </div>
-        </div>
-      )}
-
-      {guideData.water_refill_stations_race_weekend && (
-        <div className="space-y-2">
-          <h3 className="font-semibold text-lg">Water Refill Stations During Race Weekend</h3>
-          <div className="text-sm opacity-90 whitespace-pre-wrap">
-            {guideData.water_refill_stations_race_weekend}
           </div>
         </div>
       )}

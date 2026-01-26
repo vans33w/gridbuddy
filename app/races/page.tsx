@@ -280,7 +280,7 @@ export default function RacesPage() {
                       {race.country}
                     </p>
                   )}
-                </div>
+              </div>
               </Link>
             ))
           ) : (
@@ -332,7 +332,7 @@ export default function RacesPage() {
                       </svg>
                     </div>
                   )}
-                </div>
+        </div>
 
                 {/* Title */}
                 <div className="p-4 border-t border-[var(--border)]">
@@ -352,9 +352,9 @@ export default function RacesPage() {
           {filteredCatalog.length === 0 && (
             <div className="text-sm opacity-70 py-8 text-center">
               {query ? "No matching races found." : "No races available."}
-            </div>
-          )}
-        </section>
+          </div>
+        )}
+      </section>
 
       {/* Your List Section */}
       {isAuthed && (
@@ -368,10 +368,10 @@ export default function RacesPage() {
 
           {userRaces.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {userRaces.map((ur) => {
-                const r = raceById(ur.race_id);
+            {userRaces.map((ur) => {
+              const r = raceById(ur.race_id);
                 if (!r) return null;
-                return (
+              return (
                   <div key={ur.id} className="card p-4 space-y-3">
                     {r.slug ? (
                       <Link
@@ -388,37 +388,37 @@ export default function RacesPage() {
                     )}
                     <span className="text-sm opacity-70 block">Status: {ur.status}</span>
                     <div className="flex gap-2 flex-wrap">
-                      {ur.status !== "want" && (
+                    {ur.status !== "want" && (
                         <button
                           className="btn-text text-xs"
                           onClick={() => setStatus(ur.race_id, "want")}
                         >
-                          Mark Want
-                        </button>
-                      )}
-                      {ur.status !== "been" && (
+                        Mark Want
+                      </button>
+                    )}
+                    {ur.status !== "been" && (
                         <button
                           className="btn-text text-xs"
                           onClick={() => setStatus(ur.race_id, "been")}
                         >
-                          Mark Been
-                        </button>
-                      )}
+                        Mark Been
+                      </button>
+                    )}
                       <button
                         className="btn-text text-xs"
                         onClick={() => removeUserRace(ur.id)}
                       >
-                        Remove
-                      </button>
-                    </div>
+                      Remove
+                    </button>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
             </div>
           ) : (
             <p className="opacity-70">No races in your list yet.</p>
-          )}
-        </section>
+        )}
+      </section>
       )}
 
       {!isAuthed && (

@@ -99,7 +99,7 @@ export default async function RaceDetailPage(props: any) {
         </h1>
 
         <div className="flex flex-wrap items-center gap-4">
-          <MarkButtons raceId={race.id} initialStatus={myStatus} />
+        <MarkButtons raceId={race.id} initialStatus={myStatus} />
           <AddToMoment raceId={race.id} raceName={race.name} />
         </div>
       </div>
@@ -108,11 +108,11 @@ export default async function RaceDetailPage(props: any) {
       {race.hero_image_url && (
         <div className="w-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={race.hero_image_url}
-            alt={race.name}
+        <img
+          src={race.hero_image_url}
+          alt={race.name}
             className="w-full h-auto rounded-lg object-cover"
-          />
+        />
         </div>
       )}
 
@@ -163,18 +163,18 @@ export default async function RaceDetailPage(props: any) {
               {race.official_website && (
                 <div>
                   <span className="font-medium text-[var(--secondary)]/70">Website:</span>{" "}
-                  <a
+            <a
                     className="btn-text text-sm"
-                    href={race.official_website}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
+              href={race.official_website}
+              target="_blank"
+              rel="noreferrer"
+            >
                     Visit
-                  </a>
+            </a>
                 </div>
-              )}
-            </div>
-          </div>
+          )}
+        </div>
+      </div>
 
           <div className="card p-6 space-y-4">
             <h3
@@ -197,13 +197,13 @@ export default async function RaceDetailPage(props: any) {
                 <span className="text-[var(--secondary)]/80">{pop?.been_picks ?? 0}</span>
               </div>
             </div>
-          </div>
+        </div>
         </div>
       </div>
 
       {/* Comments Section */}
       <div className="mt-8">
-        <Comments entityType="race" entityId={race.id} />
+      <Comments entityType="race" entityId={race.id} />
       </div>
     </main>
   );

@@ -74,8 +74,8 @@ export default async function TrackDetailBySlugPage(props: any) {
           className="text-2xl sm:text-3xl md:text-4xl font-bold text-[var(--secondary)]"
           style={{ fontFamily: "var(--font-space-grotesk)" }}
         >
-          {track.name} {track.country ? `— ${track.country}` : ""}
-        </h1>
+        {track.name} {track.country ? `— ${track.country}` : ""}
+      </h1>
 
         <div className="flex flex-wrap items-center gap-4">
           <MarkButtons trackId={track.id} initialStatus={myStatus} />
@@ -87,11 +87,11 @@ export default async function TrackDetailBySlugPage(props: any) {
       {track.hero_image_url && (
         <div className="w-full">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={track.hero_image_url}
-            alt={track.name}
+        <img
+          src={track.hero_image_url}
+          alt={track.name}
             className="w-full h-auto rounded-lg object-cover"
-          />
+        />
         </div>
       )}
 
@@ -143,7 +143,7 @@ export default async function TrackDetailBySlugPage(props: any) {
                 <div>
                   <span className="font-medium text-[var(--secondary)]/70">City:</span>{" "}
                   <span className="text-[var(--secondary)]/80">{track.city}</span>
-                </div>
+        </div>
               )}
               {track.website && (
                 <div>
@@ -157,9 +157,9 @@ export default async function TrackDetailBySlugPage(props: any) {
                     Visit
                   </a>
                 </div>
-              )}
-            </div>
-          </div>
+          )}
+        </div>
+      </div>
 
           <div className="card p-6 space-y-4">
             <h3
@@ -182,13 +182,13 @@ export default async function TrackDetailBySlugPage(props: any) {
                 <span className="text-[var(--secondary)]/80">{pop?.been_picks ?? 0}</span>
               </div>
             </div>
-          </div>
+        </div>
         </div>
       </div>
 
       {/* Comments Section */}
       <div className="mt-8">
-        <Comments entityType="track" entityId={track.id} />
+      <Comments entityType="track" entityId={track.id} />
       </div>
     </main>
   );
