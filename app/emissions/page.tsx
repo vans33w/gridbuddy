@@ -150,7 +150,7 @@ export default function EmissionsPage() {
             className="text-xl font-bold text-[var(--secondary)]"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
-            Trip details
+            Trip Details
           </h2>
 
           {/* Modes Section */}

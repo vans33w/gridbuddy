@@ -568,7 +568,7 @@ export default function MomentsPage() {
           className="text-2xl sm:text-3xl font-bold text-[var(--secondary)]"
           style={{ fontFamily: "var(--font-space-grotesk)" }}
         >
-          MY DIARY
+          My Diary
         </h1>
         <div className="border-t border-[var(--border)]"></div>
       </div>
