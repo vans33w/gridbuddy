@@ -127,7 +127,7 @@ export default async function HomePage() {
             className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
           >
             <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Calculate travel emissions.
+              Calculate Travel Emissions
             </h3>
             <p className="text-sm text-[var(--secondary)]/70">
               Plan your journey with sustainability in mind.
@@ -151,7 +151,7 @@ export default async function HomePage() {
             className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
           >
             <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Track bucket lists.
+              Track Bucket Lists
             </h3>
             <p className="text-sm text-[var(--secondary)]/70">
               Mark tracks and races you want to visit or have been to.
@@ -163,7 +163,7 @@ export default async function HomePage() {
             className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
           >
             <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Countdown to Events.
+              Countdown to Events
             </h3>
             <p className="text-sm text-[var(--secondary)]/70">
               Never miss an important race or track event.

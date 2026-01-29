@@ -141,7 +141,7 @@ export default function PicksClient({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
-            <div className="font-medium">Want to go</div>
+            <div className="font-medium">Want To Go</div>
 
             {tracksWant.map((t) => (
               <div key={t.id} className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3">
@@ -223,7 +223,7 @@ export default function PicksClient({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
-            <div className="font-medium">Want to go</div>
+            <div className="font-medium">Want To Go</div>
 
             {racesWant.map((r) => (
               <div key={r.id} className="border border-[var(--border)] rounded-md p-2 flex items-center justify-between gap-3">
