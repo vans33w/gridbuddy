@@ -17,6 +17,7 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [info, setInfo] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   useEffect(() => {
     // If already logged in, go to app
@@ -36,9 +37,78 @@ export default function SignupPage() {
     return null;
   }
 
+  function validateEmail(value: string): string | null {
+    const trimmed = value.trim().toLowerCase();
+    
+    // Basic empty check
+    if (!trimmed) {
+      return "Email is required";
+    }
+
+    // RFC 5322 compliant email regex (more strict than basic patterns)
+    const emailRegex = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/;
+    
+    if (!emailRegex.test(trimmed)) {
+      return "Please enter a valid email address";
+    }
+
+    // Check for common typos
+    if (trimmed.includes("..")) {
+      return "Email cannot contain consecutive dots";
+    }
+
+    if (trimmed.startsWith(".") || trimmed.startsWith("@")) {
+      return "Email cannot start with a dot or @";
+    }
+
+    if (trimmed.endsWith(".") || trimmed.endsWith("@")) {
+      return "Email cannot end with a dot or @";
+    }
+
+    // Check for disposable email domains (common ones that cause bounces)
+    const disposableDomains = [
+      "tempmail.com",
+      "10minutemail.com",
+      "guerrillamail.com",
+      "mailinator.com",
+      "throwaway.email",
+      "temp-mail.org",
+      "yopmail.com",
+      "getnada.com",
+      "mohmal.com",
+      "fakeinbox.com",
+    ];
+
+    const domain = trimmed.split("@")[1];
+    if (domain && disposableDomains.some(d => domain.includes(d))) {
+      return "Please use a permanent email address";
+    }
+
+    // Check length limits (RFC 5321)
+    if (trimmed.length > 254) {
+      return "Email address is too long";
+    }
+
+    const localPart = trimmed.split("@")[0];
+    if (localPart && localPart.length > 64) {
+      return "Email address is too long";
+    }
+
+    return null;
+  }
+
   async function onSignup() {
     setError("");
     setInfo("");
+    setEmailError("");
+
+    // Validate email format
+    const emailValidationError = validateEmail(email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      setError(emailValidationError);
+      return;
+    }
 
     // Validate username format
     const usernameError = validateUsername(username);
@@ -110,13 +180,30 @@ export default function SignupPage() {
           autoComplete="username"
         />
 
-        <input
-          className="border p-2 w-full"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          autoComplete="email"
-        />
+        <div>
+          <input
+            className={`border p-2 w-full ${emailError ? "border-red-500" : ""}`}
+            placeholder="Email"
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              // Clear error when user starts typing
+              if (emailError) {
+                setEmailError("");
+              }
+            }}
+            onBlur={() => {
+              // Validate on blur
+              const validationError = validateEmail(email);
+              setEmailError(validationError || "");
+            }}
+            autoComplete="email"
+          />
+          {emailError && (
+            <p className="text-red-600 text-xs mt-1">{emailError}</p>
+          )}
+        </div>
 
         <input
           className="border p-2 w-full"

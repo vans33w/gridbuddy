@@ -283,31 +283,31 @@ export default function TracksPage() {
                         <p className="text-sm text-[var(--secondary)]/60 mt-1">
                           {track.country}
                         </p>
-                      )}
+              )}
                     </Link>
                     {isAuthed && (
                       <div className="flex gap-2 flex-wrap">
-                        <button
+                <button
                           className={`btn-text text-xs ${currentStatus === "want" ? "opacity-50 cursor-not-allowed" : ""}`}
                           onClick={(e) => {
                             e.preventDefault();
                             setStatus(track.track_id, "want");
                           }}
                           disabled={currentStatus === "want"}
-                        >
+                >
                           {currentStatus === "want" ? "Want ✓" : "Want"}
-                        </button>
-                        <button
+                </button>
+                <button
                           className={`btn-text text-xs ${currentStatus === "been" ? "opacity-50 cursor-not-allowed" : ""}`}
                           onClick={(e) => {
                             e.preventDefault();
                             setStatus(track.track_id, "been");
                           }}
                           disabled={currentStatus === "been"}
-                        >
+                >
                           {currentStatus === "been" ? "Been ✓" : "Been"}
-                        </button>
-                      </div>
+                </button>
+              </div>
                     )}
                   </div>
                 </div>
@@ -413,9 +413,9 @@ export default function TracksPage() {
           {filteredCatalog.length === 0 && (
             <div className="text-sm opacity-70 py-8 text-center">
               {query ? "No matching tracks found." : "No tracks available."}
-            </div>
-          )}
-        </section>
+          </div>
+        )}
+      </section>
 
       {/* Your List Section */}
       {isAuthed && (
@@ -429,10 +429,10 @@ export default function TracksPage() {
 
           {userTracks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {userTracks.map((ut) => {
-                const t = trackById(ut.track_id);
+            {userTracks.map((ut) => {
+              const t = trackById(ut.track_id);
                 if (!t) return null;
-                return (
+              return (
                   <div key={ut.id} className="card p-4 space-y-3">
                     {t.slug ? (
                       <Link
@@ -449,37 +449,37 @@ export default function TracksPage() {
                     )}
                     <span className="text-sm opacity-70 block">Status: {ut.status}</span>
                     <div className="flex gap-2 flex-wrap">
-                      {ut.status !== "want" && (
+                    {ut.status !== "want" && (
                         <button
                           className="btn-text text-xs"
                           onClick={() => setStatus(ut.track_id, "want")}
                         >
-                          Mark Want
-                        </button>
-                      )}
-                      {ut.status !== "been" && (
+                        Mark Want
+                      </button>
+                    )}
+                    {ut.status !== "been" && (
                         <button
                           className="btn-text text-xs"
                           onClick={() => setStatus(ut.track_id, "been")}
                         >
-                          Mark Been
-                        </button>
-                      )}
+                        Mark Been
+                      </button>
+                    )}
                       <button
                         className="btn-text text-xs"
                         onClick={() => removeUserTrack(ut.id)}
                       >
-                        Remove
-                      </button>
-                    </div>
+                      Remove
+                    </button>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
             </div>
           ) : (
             <p className="opacity-70">No tracks in your list yet.</p>
-          )}
-        </section>
+        )}
+      </section>
       )}
 
       {!isAuthed && (

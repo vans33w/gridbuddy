@@ -150,7 +150,7 @@ export default function EmissionsPage() {
             className="text-xl font-bold text-[var(--secondary)]"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
-            Trip details
+            Trip Details
           </h2>
 
           {/* Modes Section */}
@@ -166,7 +166,7 @@ export default function EmissionsPage() {
 
                 return (
                   <div key={mode} className="relative">
-                    <label
+              <label
                       className={`card p-5 cursor-pointer transition-all relative min-h-[140px] flex flex-col ${
                         isSelected
                           ? "border-2 border-[var(--primary)] bg-[var(--primary)]/5 shadow-sm"
@@ -177,12 +177,12 @@ export default function EmissionsPage() {
                       <div className="flex items-start justify-between mb-4">
                         {/* Custom Checkbox - Top Left */}
                         <div className="flex-shrink-0">
-                          <input
-                            type="checkbox"
+                <input
+                  type="checkbox"
                             checked={isSelected}
-                            onChange={() => toggleMode(mode as TransportMode)}
+                  onChange={() => toggleMode(mode as TransportMode)}
                             className="sr-only"
-                          />
+                />
                           <div
                             className={`w-5 h-5 border-2 rounded flex items-center justify-center transition-all cursor-pointer ${
                               isSelected
@@ -210,7 +210,7 @@ export default function EmissionsPage() {
                               </svg>
                             )}
                           </div>
-                        </div>
+          </div>
 
                         {/* Downward Arrow - Top Right */}
                         {isCar && (
@@ -241,8 +241,8 @@ export default function EmissionsPage() {
                               />
                             </svg>
                           </button>
-                        )}
-                      </div>
+          )}
+        </div>
 
                       {/* Icon and Label - Centered */}
                       <div className="flex flex-col items-center justify-center gap-3 flex-1">
@@ -264,21 +264,21 @@ export default function EmissionsPage() {
                       <div className="absolute top-full left-0 right-0 mt-2 card p-4 z-10 bg-white border-2 border-[var(--primary)]/20 shadow-lg">
                         <label className="block text-xs font-semibold text-[var(--secondary)] mb-2 uppercase tracking-wide">
                           Fuel Type
-                        </label>
-                        <select
+            </label>
+            <select
                           className="border-2 border-[var(--border)] p-2.5 w-full rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all"
-                          value={carFuelType}
-                          onChange={(e) => setCarFuelType(e.target.value as CarFuelType)}
+              value={carFuelType}
+              onChange={(e) => setCarFuelType(e.target.value as CarFuelType)}
                           onClick={(e) => e.stopPropagation()}
-                        >
-                          {CAR_FUEL_TYPES.map((fuel) => (
-                            <option key={fuel.value} value={fuel.value}>
-                              {fuel.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+            >
+              {CAR_FUEL_TYPES.map((fuel) => (
+                <option key={fuel.value} value={fuel.value}>
+                  {fuel.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
                   </div>
                 );
               })}
@@ -289,7 +289,7 @@ export default function EmissionsPage() {
           </div>
 
           {/* Number of People */}
-          <div className="space-y-2">
+        <div className="space-y-2">
             <label htmlFor="passengers" className="flex items-center gap-2 text-sm font-semibold text-[var(--secondary)]">
               <svg
                 className="w-5 h-5"
@@ -305,17 +305,17 @@ export default function EmissionsPage() {
                 />
               </svg>
               People
-            </label>
+          </label>
             <div className="flex items-center gap-2">
-              <input
-                id="passengers"
-                type="number"
-                min="1"
+          <input
+            id="passengers"
+            type="number"
+            min="1"
                 className="border border-[var(--border)] p-2 rounded-lg flex-1"
-                value={passengers}
-                onChange={(e) => setPassengers(e.target.value)}
-                required
-              />
+            value={passengers}
+            onChange={(e) => setPassengers(e.target.value)}
+            required
+          />
               <button
                 type="button"
                 onClick={() => setPassengers(String(Math.max(1, parseInt(passengers) - 1)))}

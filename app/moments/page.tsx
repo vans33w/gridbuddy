@@ -374,15 +374,15 @@ export default function MomentsPage() {
           // If columns don't exist, try without them
           if (updateErr.message.includes("column") && updateErr.message.includes("does not exist")) {
             const { error: updateErr2 } = await supabase
-              .from("moments")
-              .update({
-                folder_id: selectedFolderId === "none" ? null : selectedFolderId,
-                title: title || null,
-                body: body || null,
-                entry_date: entryDate || null,
-              })
-              .eq("id", editingId)
-              .eq("user_id", user.id);
+          .from("moments")
+          .update({
+            folder_id: selectedFolderId === "none" ? null : selectedFolderId,
+            title: title || null,
+            body: body || null,
+            entry_date: entryDate || null,
+          })
+          .eq("id", editingId)
+          .eq("user_id", user.id);
             if (updateErr2) throw new Error(updateErr2.message);
           } else {
             throw new Error(updateErr.message);
@@ -424,16 +424,16 @@ export default function MomentsPage() {
         // If columns don't exist, try without them
         if (insertErr.message.includes("column") && insertErr.message.includes("does not exist")) {
           const { data: created2, error: insertErr2 } = await supabase
-            .from("moments")
-            .insert({
-              user_id: user.id,
-              folder_id: selectedFolderId === "none" ? null : selectedFolderId,
-              title: title || null,
-              body: body || null,
-              entry_date: entryDate || null,
-            })
-            .select("id")
-            .single();
+        .from("moments")
+        .insert({
+          user_id: user.id,
+          folder_id: selectedFolderId === "none" ? null : selectedFolderId,
+          title: title || null,
+          body: body || null,
+          entry_date: entryDate || null,
+        })
+        .select("id")
+        .single();
           if (insertErr2) throw new Error(insertErr2.message);
           const momentId = created2?.id as number;
           await uploadPhotos(user.id, momentId, files);
@@ -568,7 +568,7 @@ export default function MomentsPage() {
           className="text-2xl sm:text-3xl font-bold text-[var(--secondary)]"
           style={{ fontFamily: "var(--font-space-grotesk)" }}
         >
-          MY DIARY
+          My Diary
         </h1>
         <div className="border-t border-[var(--border)]"></div>
       </div>
@@ -595,7 +595,7 @@ export default function MomentsPage() {
       {/* Form Section (Collapsible) */}
       {showForm && (
         <div className="card p-4 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
             <div
               className="font-semibold text-lg text-[var(--secondary)]"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
@@ -610,17 +610,17 @@ export default function MomentsPage() {
             >
               Cancel
             </button>
-          </div>
+        </div>
 
-          <div className="grid grid-cols-1 gap-2">
-            <label className="text-sm opacity-80">Entry date</label>
-            <input
+        <div className="grid grid-cols-1 gap-2">
+          <label className="text-sm opacity-80">Entry date</label>
+          <input
               className="border border-[var(--border)] p-2 w-full rounded-lg"
-              type="date"
-              value={entryDate}
-              onChange={(e) => setEntryDate(e.target.value)}
-            />
-          </div>
+            type="date"
+            value={entryDate}
+            onChange={(e) => setEntryDate(e.target.value)}
+          />
+        </div>
 
           {/* Track and Race Selection */}
           <div className="space-y-4">
@@ -775,19 +775,19 @@ export default function MomentsPage() {
             </div>
           </div>
 
-          <input
+        <input
             className="border border-[var(--border)] p-2 w-full rounded-lg"
-            placeholder="Title (e.g., 'Silverstone weekend')"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+          placeholder="Title (e.g., 'Silverstone weekend')"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
 
-          <textarea
+        <textarea
             className="border border-[var(--border)] p-2 w-full min-h-[160px] rounded-lg"
-            placeholder="Write your journal entry..."
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-          />
+          placeholder="Write your journal entry..."
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+        />
 
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
@@ -845,46 +845,46 @@ export default function MomentsPage() {
               </div>
             )}
 
-            <select
+        <select
               className="border border-[var(--border)] p-2 w-full rounded-lg"
-              value={selectedFolderId}
-              onChange={(e) =>
-                setSelectedFolderId(e.target.value === "none" ? "none" : Number(e.target.value))
-              }
-            >
-              <option value="none">No folder</option>
-              {folders.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
+          value={selectedFolderId}
+          onChange={(e) =>
+            setSelectedFolderId(e.target.value === "none" ? "none" : Number(e.target.value))
+          }
+        >
+          <option value="none">No folder</option>
+          {folders.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.name}
+            </option>
+          ))}
+        </select>
           </div>
 
-          <div className="space-y-1">
+        <div className="space-y-1">
             <label className="text-sm opacity-80">
               Photos {editingId ? "(optional: add more)" : ""}
             </label>
-            <input
+          <input
               className="border border-[var(--border)] p-2 w-full rounded-lg"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-            />
-            <div className="text-xs opacity-70">{fileLabel}</div>
-          </div>
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
+          />
+          <div className="text-xs opacity-70">{fileLabel}</div>
+        </div>
 
           <button
             className="btn-primary px-4 py-2 w-full"
             onClick={saveMoment}
             disabled={saving}
           >
-            {saving ? "Saving..." : editingId ? "Save changes" : "Save entry"}
-          </button>
+          {saving ? "Saving..." : editingId ? "Save changes" : "Save entry"}
+        </button>
 
           {error && <p className="text-[var(--primary)] text-sm">{error}</p>}
-        </div>
+      </div>
       )}
 
       {/* Diary Entries */}
@@ -943,7 +943,7 @@ export default function MomentsPage() {
                       {m.title ?? "Untitled"}
                     </h3>
                     <p className="text-sm text-[var(--secondary)]/60">{displayDate}</p>
-                  </div>
+              </div>
 
                   {m.body && (
                     <div className="text-sm text-[var(--secondary)]/80 whitespace-pre-wrap leading-relaxed">
@@ -984,9 +984,9 @@ export default function MomentsPage() {
                           alt="Moment photo"
                           className="h-20 rounded-md border border-[var(--border)] shrink-0"
                         />
-                      ))}
-                    </div>
-                  )}
+                  ))}
+                </div>
+              )}
 
                   <div className="pt-2 flex gap-4 border-t border-[var(--border)]">
                     <button
@@ -994,15 +994,15 @@ export default function MomentsPage() {
                       onClick={() => startEdit(m)}
                       disabled={saving}
                     >
-                      Edit
-                    </button>
-                    <button
-                      className="btn-text-danger text-sm"
-                      onClick={() => deleteMoment(m.id)}
-                      disabled={saving}
-                    >
-                      Delete
-                    </button>
+                  Edit
+                </button>
+                <button
+                  className="btn-text-danger text-sm"
+                  onClick={() => deleteMoment(m.id)}
+                  disabled={saving}
+                >
+                  Delete
+                </button>
                   </div>
                 </div>
               </div>

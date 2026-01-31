@@ -154,7 +154,7 @@ export default function GoalsClient({
       <div className="font-semibold">Goals</div>
 
       <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
-        <div className="text-sm font-medium">Add a goal</div>
+        <div className="text-sm font-medium">Add A Goal</div>
         <div className="flex gap-2">
           <input
             className="border p-2 w-full"
@@ -178,7 +178,7 @@ export default function GoalsClient({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="border border-[var(--border)] rounded-lg p-3 space-y-2">
-          <div className="font-medium">In progress</div>
+          <div className="font-medium">In Progress</div>
 
           {inProgress.map((g) => (
             <div
