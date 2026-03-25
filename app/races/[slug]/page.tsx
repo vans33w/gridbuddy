@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "../../../lib/supabase/server";
-import MarkButtons from "./MarkButtons";
+import { FavouriteMarkButton, FavouriteOverlayHeart } from "../../components/FavouriteControls";
+import { isFavouritedStatus } from "../../../lib/favourites";
 import AddToMoment from "../../components/AddToMoment";
 import Comments from "../../components/Comments";
+import EntityQuestionsSection from "../../components/EntityQuestionsSection";
+import EntityReviewsSection from "../../components/EntityReviewsSection";
 import RaceSustainabilityGuide from "../../components/RaceSustainabilityGuide";
 
 export default async function RaceDetailPage(props: any) {
@@ -71,7 +74,7 @@ export default async function RaceDetailPage(props: any) {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
 
-  let myStatus: "want" | "been" | null = null;
+  let myFavourited = false;
   if (userId) {
     const { data: ur } = await supabase
       .from("user_races")
@@ -80,7 +83,7 @@ export default async function RaceDetailPage(props: any) {
       .eq("race_id", race.id)
       .maybeSingle();
 
-    myStatus = (ur?.status as any) ?? null;
+    myFavourited = isFavouritedStatus(ur?.status as string | undefined);
   }
 
   return (
@@ -99,20 +102,23 @@ export default async function RaceDetailPage(props: any) {
         </h1>
 
         <div className="flex flex-wrap items-center gap-4">
-        <MarkButtons raceId={race.id} initialStatus={myStatus} />
+          {!race.hero_image_url && (
+            <FavouriteMarkButton kind="race" entityId={race.id} initialFavourited={myFavourited} />
+          )}
           <AddToMoment raceId={race.id} raceName={race.name} />
         </div>
       </div>
 
       {/* Main Photo */}
       {race.hero_image_url && (
-        <div className="w-full">
+        <div className="w-full relative rounded-lg overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={race.hero_image_url}
-          alt={race.name}
-            className="w-full h-auto rounded-lg object-cover"
-        />
+          <img
+            src={race.hero_image_url}
+            alt={race.name}
+            className="w-full h-auto object-cover"
+          />
+          <FavouriteOverlayHeart kind="race" entityId={race.id} initialFavourited={myFavourited} />
         </div>
       )}
 
@@ -185,25 +191,28 @@ export default async function RaceDetailPage(props: any) {
             </h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="font-medium text-[var(--secondary)]/70">Total picks:</span>{" "}
+                <span className="font-medium text-[var(--secondary)]/70">Saved (Want + Been):</span>{" "}
                 <span className="text-[var(--secondary)]/80">{pop?.total_picks ?? 0}</span>
-              </div>
-              <div>
-                <span className="font-medium text-[var(--secondary)]/70">Want:</span>{" "}
-                <span className="text-[var(--secondary)]/80">{pop?.want_picks ?? 0}</span>
-              </div>
-              <div>
-                <span className="font-medium text-[var(--secondary)]/70">Been:</span>{" "}
-                <span className="text-[var(--secondary)]/80">{pop?.been_picks ?? 0}</span>
               </div>
             </div>
         </div>
         </div>
       </div>
 
-      {/* Comments Section */}
-      <div className="mt-8">
-      <Comments entityType="race" entityId={race.id} />
+      <div className="mt-8 space-y-8">
+        <EntityReviewsSection
+          entityType="race"
+          entityId={race.id}
+          entitySlug={race.slug ?? raw}
+          variant="preview"
+        />
+        <EntityQuestionsSection
+          entityType="race"
+          entityId={race.id}
+          entitySlug={race.slug ?? raw}
+          variant="preview"
+        />
+        <Comments entityType="race" entityId={race.id} />
       </div>
     </main>
   );

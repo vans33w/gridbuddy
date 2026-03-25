@@ -20,7 +20,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Grid Buddy",
-  description: "Motorsport journal and track bucket list",
+  description: "Motorsport journal, Want/Been lists, and race planning",
 };
 
 export default function RootLayout({

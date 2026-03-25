@@ -1,9 +1,11 @@
 "use client";
 
 import BackHome from "../components/BackHome";
+import { FavouriteHeartIconButton } from "../components/FavouriteControls";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
+import { FAVOURITE_DB_STATUS, isFavouritedStatus } from "../../lib/favourites";
 
 type CatalogTrack = { id: number; slug: string | null; name: string; country: string | null; hero_image_url: string | null };
 type UserTrack = { id: number; track_id: number; status: "been" | "want"; created_at: string };
@@ -29,6 +31,7 @@ export default function TracksPage() {
 
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
+  const [busyTrackId, setBusyTrackId] = useState<number | null>(null);
 
   async function getUserId(): Promise<string | null> {
     const { data, error } = await supabase.auth.getUser();
@@ -125,45 +128,41 @@ export default function TracksPage() {
     setUserTracks((data as UserTrack[]) ?? []);
   }
 
-  async function setStatus(trackId: number, status: "want" | "been") {
+  async function toggleTrackFavourite(trackId: number) {
     setError("");
-    const uid = await getUserId();
-    if (!uid) {
-      window.location.href = "/login";
-      return;
+    setBusyTrackId(trackId);
+    try {
+      const uid = await getUserId();
+      if (!uid) {
+        window.location.href = "/login";
+        return;
+      }
+
+      const existing = userTracks.find((ut) => ut.track_id === trackId);
+
+      if (existing && isFavouritedStatus(existing.status)) {
+        const { error } = await supabase.from("user_tracks").delete().eq("id", existing.id);
+        if (error) setError(error.message);
+      } else if (existing) {
+        const { error } = await supabase
+          .from("user_tracks")
+          .update({ status: FAVOURITE_DB_STATUS })
+          .eq("id", existing.id);
+        if (error) setError(error.message);
+      } else {
+        const { error } = await supabase.from("user_tracks").insert({
+          user_id: uid,
+          track_id: trackId,
+          status: FAVOURITE_DB_STATUS,
+        });
+        if (error) setError(error.message);
+      }
+
+      await loadUserTracks();
+      await loadTop5();
+    } finally {
+      setBusyTrackId(null);
     }
-
-    const existing = userTracks.find((ut) => ut.track_id === trackId);
-
-    if (existing) {
-      const { error } = await supabase.from("user_tracks").update({ status }).eq("id", existing.id);
-      if (error) setError(error.message);
-    } else {
-      const { error } = await supabase.from("user_tracks").insert({
-        user_id: uid,
-        track_id: trackId,
-        status,
-      });
-      if (error) setError(error.message);
-    }
-
-    await loadUserTracks();
-    await loadTop5();
-  }
-
-  async function removeUserTrack(userTrackId: number) {
-    setError("");
-    const uid = await getUserId();
-    if (!uid) {
-      window.location.href = "/login";
-      return;
-    }
-
-    const { error } = await supabase.from("user_tracks").delete().eq("id", userTrackId);
-    if (error) setError(error.message);
-
-    await loadUserTracks();
-    await loadTop5();
   }
 
   const filteredCatalog = useMemo(() => {
@@ -233,7 +232,7 @@ export default function TracksPage() {
           {popularTop5.length > 0 ? (
             popularTop5.map((track, i) => {
               const userTrack = userTracks.find((ut) => ut.track_id === track.track_id);
-              const currentStatus = userTrack?.status || null;
+              const favourited = userTrack ? isFavouritedStatus(userTrack.status) : false;
               return (
                 <div
                   key={track.track_id}
@@ -245,8 +244,8 @@ export default function TracksPage() {
                   </div>
 
                   {/* Image */}
-                  <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
-                    <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                  <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                    <Link href={track.slug ? `/tracks/${track.slug}` : "#"} className="block h-full">
                       {track.hero_image_url ? (
                         <img
                           src={track.hero_image_url}
@@ -270,11 +269,23 @@ export default function TracksPage() {
                           </svg>
                         </div>
                       )}
-                    </div>
-                  </Link>
+                    </Link>
+                    <FavouriteHeartIconButton
+                      overlay
+                      active={favourited}
+                      loading={busyTrackId === track.track_id}
+                      label={
+                        favourited ? "Remove track from your lists" : "Add track to Want"
+                      }
+                      onPress={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void toggleTrackFavourite(track.track_id);
+                      }}
+                    />
+                  </div>
 
-                  {/* Title and Buttons */}
-                  <div className="p-4 border-t border-[var(--border)] space-y-3">
+                  <div className="p-4 border-t border-[var(--border)]">
                     <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
                       <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors line-clamp-2">
                         {track.name}
@@ -285,30 +296,6 @@ export default function TracksPage() {
                         </p>
               )}
                     </Link>
-                    {isAuthed && (
-                      <div className="flex gap-2 flex-wrap">
-                <button
-                          className={`btn-text text-xs ${currentStatus === "want" ? "opacity-50 cursor-not-allowed" : ""}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setStatus(track.track_id, "want");
-                          }}
-                          disabled={currentStatus === "want"}
-                >
-                          {currentStatus === "want" ? "Want ✓" : "Want"}
-                </button>
-                <button
-                          className={`btn-text text-xs ${currentStatus === "been" ? "opacity-50 cursor-not-allowed" : ""}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setStatus(track.track_id, "been");
-                          }}
-                          disabled={currentStatus === "been"}
-                >
-                          {currentStatus === "been" ? "Been ✓" : "Been"}
-                </button>
-              </div>
-                    )}
                   </div>
                 </div>
               );
@@ -331,17 +318,17 @@ export default function TracksPage() {
         </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredCatalog.map((track) => {
+            {            filteredCatalog.map((track) => {
               const userTrack = userTracks.find((ut) => ut.track_id === track.id);
-              const currentStatus = userTrack?.status || null;
+              const favourited = userTrack ? isFavouritedStatus(userTrack.status) : false;
               return (
                 <div
                   key={track.id}
                   className="group card overflow-hidden hover:shadow-lg transition-all relative"
                 >
                   {/* Image */}
-                  <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
-                    <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                  <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                    <Link href={track.slug ? `/tracks/${track.slug}` : "#"} className="block h-full">
                       {track.hero_image_url ? (
                         <img
                           src={track.hero_image_url}
@@ -365,11 +352,23 @@ export default function TracksPage() {
                           </svg>
                         </div>
                       )}
-                    </div>
-                  </Link>
+                    </Link>
+                    <FavouriteHeartIconButton
+                      overlay
+                      active={favourited}
+                      loading={busyTrackId === track.id}
+                      label={
+                        favourited ? "Remove track from your lists" : "Add track to Want"
+                      }
+                      onPress={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        void toggleTrackFavourite(track.id);
+                      }}
+                    />
+                  </div>
 
-                  {/* Title and Buttons */}
-                  <div className="p-4 border-t border-[var(--border)] space-y-3">
+                  <div className="p-4 border-t border-[var(--border)]">
                     <Link href={track.slug ? `/tracks/${track.slug}` : "#"}>
                       <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors">
                         {track.name}
@@ -380,30 +379,6 @@ export default function TracksPage() {
                         </p>
                       )}
                     </Link>
-                    {isAuthed && (
-                      <div className="flex gap-2 flex-wrap">
-                        <button
-                          className={`btn-text text-xs ${currentStatus === "want" ? "opacity-50 cursor-not-allowed" : ""}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setStatus(track.id, "want");
-                          }}
-                          disabled={currentStatus === "want"}
-                        >
-                          {currentStatus === "want" ? "Want ✓" : "Want"}
-                        </button>
-                        <button
-                          className={`btn-text text-xs ${currentStatus === "been" ? "opacity-50 cursor-not-allowed" : ""}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setStatus(track.id, "been");
-                          }}
-                          disabled={currentStatus === "been"}
-                        >
-                          {currentStatus === "been" ? "Been ✓" : "Been"}
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               );
@@ -417,69 +392,181 @@ export default function TracksPage() {
         )}
       </section>
 
-      {/* Your List Section */}
+      {/* Your Want / Been */}
       {isAuthed && (
-        <section className="space-y-4">
-          <h2
-            className="text-xl font-bold text-[var(--secondary)]"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            Your List
-          </h2>
+        <div className="space-y-10">
+          <section className="space-y-4">
+            <h2
+              className="text-xl font-bold text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Your Want To Go (Tracks)
+            </h2>
+            {userTracks.filter((u) => u.status === "want").length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {userTracks
+                  .filter((ut) => ut.status === "want")
+                  .map((ut) => {
+                    const t = trackById(ut.track_id);
+                    if (!t) return null;
+                    const onList = isFavouritedStatus(ut.status);
+                    return (
+                      <div
+                        key={ut.id}
+                        className="group card overflow-hidden hover:shadow-lg transition-all relative"
+                      >
+                        <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                          {t.slug ? (
+                            <Link href={`/tracks/${t.slug}`} className="block h-full">
+                              {t.hero_image_url ? (
+                                <img
+                                  src={t.hero_image_url}
+                                  alt={t.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                                  <svg
+                                    className="w-16 h-16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                    />
+                                  </svg>
+                                </div>
+                              )}
+                            </Link>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-sm text-[var(--primary)] px-2 text-center">
+                              Missing slug
+                            </div>
+                          )}
+                          <FavouriteHeartIconButton
+                            overlay
+                            active={onList}
+                            loading={busyTrackId === ut.track_id}
+                            label="Remove from bucket list"
+                            onPress={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              void toggleTrackFavourite(ut.track_id);
+                            }}
+                          />
+                        </div>
+                        <div className="p-4 border-t border-[var(--border)]">
+                          {t.slug ? (
+                            <Link
+                              href={`/tracks/${t.slug}`}
+                              className="font-semibold hover:text-[var(--primary)] transition-colors block line-clamp-2"
+                            >
+                              {t.name}
+                              {t.country ? ` — ${t.country}` : ""}
+                            </Link>
+                          ) : (
+                            <span className="text-sm text-[var(--primary)]">Missing slug</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            ) : (
+              <p className="opacity-70 text-sm">No tracks in Want To Go yet.</p>
+            )}
+          </section>
 
-          {userTracks.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {userTracks.map((ut) => {
-              const t = trackById(ut.track_id);
-                if (!t) return null;
-              return (
-                  <div key={ut.id} className="card p-4 space-y-3">
-                    {t.slug ? (
-                      <Link
-                        href={`/tracks/${t.slug}`}
-                        className="font-semibold hover:text-[var(--primary)] transition-colors block"
+          <section className="space-y-4">
+            <h2
+              className="text-xl font-bold text-[var(--secondary)]"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              Your Been (Tracks)
+            </h2>
+            {userTracks.filter((u) => u.status === "been").length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {userTracks
+                  .filter((ut) => ut.status === "been")
+                  .map((ut) => {
+                    const t = trackById(ut.track_id);
+                    if (!t) return null;
+                    const onList = isFavouritedStatus(ut.status);
+                    return (
+                      <div
+                        key={ut.id}
+                        className="group card overflow-hidden hover:shadow-lg transition-all relative"
                       >
-                        {t.name}
-                        {t.country ? ` — ${t.country}` : ""}
-                      </Link>
-                    ) : (
-                      <span className="text-sm text-[var(--primary)]">
-                        Missing slug
-                      </span>
-                    )}
-                    <span className="text-sm opacity-70 block">Status: {ut.status}</span>
-                    <div className="flex gap-2 flex-wrap">
-                    {ut.status !== "want" && (
-                        <button
-                          className="btn-text text-xs"
-                          onClick={() => setStatus(ut.track_id, "want")}
-                        >
-                        Mark Want
-                      </button>
-                    )}
-                    {ut.status !== "been" && (
-                        <button
-                          className="btn-text text-xs"
-                          onClick={() => setStatus(ut.track_id, "been")}
-                        >
-                        Mark Been
-                      </button>
-                    )}
-                      <button
-                        className="btn-text text-xs"
-                        onClick={() => removeUserTrack(ut.id)}
-                      >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-            </div>
-          ) : (
-            <p className="opacity-70">No tracks in your list yet.</p>
-        )}
-      </section>
+                        <div className="aspect-[4/3] relative bg-[var(--secondary)]/5 overflow-hidden">
+                          {t.slug ? (
+                            <Link href={`/tracks/${t.slug}`} className="block h-full">
+                              {t.hero_image_url ? (
+                                <img
+                                  src={t.hero_image_url}
+                                  alt={t.name}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
+                                  <svg
+                                    className="w-16 h-16"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                                    />
+                                  </svg>
+                                </div>
+                              )}
+                            </Link>
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-sm text-[var(--primary)] px-2 text-center">
+                              Missing slug
+                            </div>
+                          )}
+                          <FavouriteHeartIconButton
+                            overlay
+                            active={onList}
+                            loading={busyTrackId === ut.track_id}
+                            label="Remove from bucket list"
+                            onPress={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              void toggleTrackFavourite(ut.track_id);
+                            }}
+                          />
+                        </div>
+                        <div className="p-4 border-t border-[var(--border)]">
+                          {t.slug ? (
+                            <Link
+                              href={`/tracks/${t.slug}`}
+                              className="font-semibold hover:text-[var(--primary)] transition-colors block line-clamp-2"
+                            >
+                              {t.name}
+                              {t.country ? ` — ${t.country}` : ""}
+                            </Link>
+                          ) : (
+                            <span className="text-sm text-[var(--primary)]">Missing slug</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            ) : (
+              <p className="opacity-70 text-sm">No tracks marked as been yet.</p>
+            )}
+          </section>
+        </div>
       )}
 
       {!isAuthed && (
@@ -487,7 +574,7 @@ export default function TracksPage() {
           <Link href="/login" className="btn-text">
             Log in
           </Link>{" "}
-          to save tracks to your Want/Been list.
+          to save tracks to Want or Been.
         </div>
       )}
     </main>
