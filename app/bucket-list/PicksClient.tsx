@@ -136,7 +136,7 @@ function CatalogAddBar({
     return { kind: "race" as const, items: list };
   }, [pickKind, q, catalogTracks, catalogRaces]);
 
-  const heading = targetStatus === "want" ? "Want To Go" : "Been";
+  const heading = targetStatus === "want" ? "Bucket List" : "Logbook";
 
   return (
     <div className="border border-[var(--border)] rounded-lg p-3 sm:p-4 space-y-3 bg-[var(--secondary)]/[0.02]">
@@ -247,6 +247,20 @@ export default function PicksClient({
 
   const wantItems = useMergedItems(tracks, races, "want", wantFilter);
   const beenItems = useMergedItems(tracks, races, "been", beenFilter);
+  const favouriteItems = useMemo(() => {
+    const items: Array<
+      | { kind: "track"; created_at: string; row: TrackRow }
+      | { kind: "race"; created_at: string; row: RaceRow }
+    > = [];
+    tracks.forEach((row) => {
+      if (row.track) items.push({ kind: "track", created_at: row.created_at, row });
+    });
+    races.forEach((row) => {
+      if (row.race) items.push({ kind: "race", created_at: row.created_at, row });
+    });
+    items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return items;
+  }, [tracks, races]);
 
   const wantTrackIds = useMemo(
     () => new Set(tracks.filter((t) => t.status === "want").map((t) => t.track?.id).filter(Boolean) as number[]),
@@ -497,7 +511,7 @@ export default function PicksClient({
               disabled={busy}
               onClick={() => void setTrackStatusByRow(row.id, "been")}
             >
-              Mark as been
+              Move to Logbook
             </button>
           ) : (
             <button
@@ -506,7 +520,7 @@ export default function PicksClient({
               disabled={busy}
               onClick={() => void setTrackStatusByRow(row.id, "want")}
             >
-              Move to Want
+              Move to Bucket List
             </button>
           )}
         </div>
@@ -565,7 +579,7 @@ export default function PicksClient({
               disabled={busy}
               onClick={() => void setRaceStatusByRow(row.id, "been")}
             >
-              Mark as been
+              Move to Logbook
             </button>
           ) : (
             <button
@@ -574,7 +588,7 @@ export default function PicksClient({
               disabled={busy}
               onClick={() => void setRaceStatusByRow(row.id, "want")}
             >
-              Move to Want
+              Move to Bucket List
             </button>
           )}
         </div>
@@ -589,9 +603,26 @@ export default function PicksClient({
       )}
 
       <section className="card p-4 sm:p-6 space-y-4">
+        <h2 className="text-lg font-bold text-[var(--secondary)]" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+          Favourites
+        </h2>
+        {favouriteItems.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-2">
+            {favouriteItems.slice(0, 12).map((item) =>
+              item.kind === "track"
+                ? renderTrackCard(item.row, item.row.status)
+                : renderRaceCard(item.row, item.row.status)
+            )}
+          </div>
+        ) : (
+          <p className="text-sm opacity-70">No favourites yet. Add tracks or races below.</p>
+        )}
+      </section>
+
+      <section className="card p-4 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-lg font-bold text-[var(--secondary)]" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-            Want To Go
+            Bucket List
           </h2>
           <label className="flex items-center gap-2 text-sm text-[var(--secondary)]/80">
             <span>Show</span>
@@ -619,14 +650,14 @@ export default function PicksClient({
             )}
           </div>
         ) : (
-          <p className="text-sm opacity-70">Nothing here yet — add tracks or races from the catalogue above.</p>
+          <p className="text-sm opacity-70">Nothing here yet — add tracks or races to your bucket list from the catalogue above.</p>
         )}
       </section>
 
       <section className="card p-4 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <h2 className="text-lg font-bold text-[var(--secondary)]" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-            Been
+            Logbook
           </h2>
           <label className="flex items-center gap-2 text-sm text-[var(--secondary)]/80">
             <span>Show</span>
@@ -654,7 +685,7 @@ export default function PicksClient({
             )}
           </div>
         ) : (
-          <p className="text-sm opacity-70">Nothing here yet — add tracks or races you have visited.</p>
+          <p className="text-sm opacity-70">Nothing here yet — add tracks or races you have already visited.</p>
         )}
       </section>
     </div>

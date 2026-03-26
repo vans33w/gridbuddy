@@ -185,10 +185,10 @@ export default async function HomePage() {
             className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
           >
             <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Want To Go & Been
+              Favourites, Bucket List, Logbook
             </h3>
             <p className="text-sm text-[var(--secondary)]/70">
-              Pick tracks and races from the catalogue; use hearts on cards to add to Want, then mark Been when you have been.
+              Save tracks and races from the catalogue, plan with Bucket List, and move visited ones to Logbook.
             </p>
           </Link>
 
