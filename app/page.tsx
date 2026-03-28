@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { supabaseServer } from "../lib/supabase/server";
 import Image from "next/image";
+import { FavouriteCatalogTile } from "./components/FavouriteControls";
+import { isFavouritedStatus } from "../lib/favourites";
 
 type TrackCard = {
   id: number;
@@ -88,10 +90,42 @@ async function getPopularRaces(): Promise<RaceCard[]> {
   );
 }
 
+async function getFavouriteTrackIds(): Promise<Set<number>> {
+  const supabase = await supabaseServer();
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return new Set();
+  const { data } = await supabase
+    .from("user_tracks")
+    .select("track_id,status")
+    .eq("user_id", u.user.id);
+  return new Set(
+    (data ?? [])
+      .filter((row) => isFavouritedStatus(row.status as string))
+      .map((row) => row.track_id as number)
+  );
+}
+
+async function getFavouriteRaceIds(): Promise<Set<number>> {
+  const supabase = await supabaseServer();
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return new Set();
+  const { data } = await supabase
+    .from("user_races")
+    .select("race_id,status")
+    .eq("user_id", u.user.id);
+  return new Set(
+    (data ?? [])
+      .filter((row) => isFavouritedStatus(row.status as string))
+      .map((row) => row.race_id as number)
+  );
+}
+
 export default async function HomePage() {
-  const [tracks, races] = await Promise.all([
+  const [tracks, races, favTrackIds, favRaceIds] = await Promise.all([
     getPopularTracks(),
     getPopularRaces(),
+    getFavouriteTrackIds(),
+    getFavouriteRaceIds(),
   ]);
 
   return (
@@ -151,10 +185,10 @@ export default async function HomePage() {
             className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
           >
             <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Track Bucket Lists
+              Favourites, Bucket List, Logbook
             </h3>
             <p className="text-sm text-[var(--secondary)]/70">
-              Mark tracks and races you want to visit or have been to.
+              Save tracks and races from the catalogue, plan with Bucket List, and move visited ones to Logbook.
             </p>
           </Link>
 
@@ -192,47 +226,17 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {tracks.length > 0 ? (
               tracks.map((track) => (
-                <Link
+                <FavouriteCatalogTile
                   key={track.id}
-                  href={track.slug ? `/tracks/${track.slug}` : "#"}
-                  className="group card overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="aspect-square relative bg-[var(--secondary)]/5 overflow-hidden">
-                    {track.hero_image_url ? (
-                      <img
-                        src={track.hero_image_url}
-                        alt={track.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
-                        <svg
-                          className="w-16 h-16"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors">
-                      {track.name}
-                    </h3>
-                    {track.country && (
-                      <p className="text-sm text-[var(--secondary)]/60 mt-1">
-                        {track.country}
-                      </p>
-                    )}
-                  </div>
-                </Link>
+                  kind="track"
+                  entityId={track.id}
+                  slug={track.slug}
+                  name={track.name}
+                  country={track.country}
+                  heroImageUrl={track.hero_image_url}
+                  initialFavourited={favTrackIds.has(track.id)}
+                  aspectClassName="aspect-square"
+                />
               ))
             ) : (
               <>
@@ -274,47 +278,17 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {races.length > 0 ? (
               races.map((race) => (
-                <Link
+                <FavouriteCatalogTile
                   key={race.id}
-                  href={race.slug ? `/races/${race.slug}` : "#"}
-                  className="group card overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="aspect-square relative bg-[var(--secondary)]/5 overflow-hidden">
-                    {race.hero_image_url ? (
-                      <img
-                        src={race.hero_image_url}
-                        alt={race.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[var(--secondary)]/30">
-                        <svg
-                          className="w-16 h-16"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-semibold text-[var(--secondary)] group-hover:text-[var(--primary)] transition-colors">
-                      {race.name}
-                    </h3>
-                    {race.country && (
-                      <p className="text-sm text-[var(--secondary)]/60 mt-1">
-                        {race.country}
-                      </p>
-                    )}
-                  </div>
-                </Link>
+                  kind="race"
+                  entityId={race.id}
+                  slug={race.slug}
+                  name={race.name}
+                  country={race.country}
+                  heroImageUrl={race.hero_image_url}
+                  initialFavourited={favRaceIds.has(race.id)}
+                  aspectClassName="aspect-square"
+                />
               ))
             ) : (
               <>

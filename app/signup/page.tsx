@@ -166,7 +166,7 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="space-y-6 max-w-md">
+    <main className="space-y-6 mx-auto max-w-md">
       <BackHome />
 
       <h1 className="text-2xl font-bold">Sign up</h1>

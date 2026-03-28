@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { supabaseServer } from "../../../lib/supabase/server";
-import MarkButtons from "./MarkButtons";
+import { FavouriteMarkButton, FavouriteOverlayHeart } from "../../components/FavouriteControls";
+import { isFavouritedStatus } from "../../../lib/favourites";
 import AddToMoment from "../../components/AddToMoment";
 import Comments from "../../components/Comments";
+import EntityQuestionsSection from "../../components/EntityQuestionsSection";
+import EntityReviewsSection from "../../components/EntityReviewsSection";
 import TrackSustainabilityGuide from "../../components/TrackSustainabilityGuide";
 
 export default async function TrackDetailBySlugPage(props: any) {
@@ -50,7 +53,7 @@ export default async function TrackDetailBySlugPage(props: any) {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
 
-  let myStatus: "want" | "been" | null = null;
+  let myFavourited = false;
   if (userId) {
     const { data: ut } = await supabase
       .from("user_tracks")
@@ -59,7 +62,7 @@ export default async function TrackDetailBySlugPage(props: any) {
       .eq("track_id", track.id)
       .maybeSingle();
 
-    myStatus = (ut?.status as any) ?? null;
+    myFavourited = isFavouritedStatus(ut?.status as string | undefined);
   }
 
   return (
@@ -78,20 +81,23 @@ export default async function TrackDetailBySlugPage(props: any) {
       </h1>
 
         <div className="flex flex-wrap items-center gap-4">
-          <MarkButtons trackId={track.id} initialStatus={myStatus} />
+          {!track.hero_image_url && (
+            <FavouriteMarkButton kind="track" entityId={track.id} initialFavourited={myFavourited} />
+          )}
           <AddToMoment trackId={track.id} trackName={track.name} />
         </div>
       </div>
 
       {/* Main Photo */}
       {track.hero_image_url && (
-        <div className="w-full">
+        <div className="w-full relative rounded-lg overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={track.hero_image_url}
-          alt={track.name}
-            className="w-full h-auto rounded-lg object-cover"
-        />
+          <img
+            src={track.hero_image_url}
+            alt={track.name}
+            className="w-full h-auto object-cover"
+          />
+          <FavouriteOverlayHeart kind="track" entityId={track.id} initialFavourited={myFavourited} />
         </div>
       )}
 
@@ -170,25 +176,28 @@ export default async function TrackDetailBySlugPage(props: any) {
             </h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="font-medium text-[var(--secondary)]/70">Total picks:</span>{" "}
+                <span className="font-medium text-[var(--secondary)]/70">Saved (Want + Been):</span>{" "}
                 <span className="text-[var(--secondary)]/80">{pop?.total_picks ?? 0}</span>
-              </div>
-              <div>
-                <span className="font-medium text-[var(--secondary)]/70">Want:</span>{" "}
-                <span className="text-[var(--secondary)]/80">{pop?.want_picks ?? 0}</span>
-              </div>
-              <div>
-                <span className="font-medium text-[var(--secondary)]/70">Been:</span>{" "}
-                <span className="text-[var(--secondary)]/80">{pop?.been_picks ?? 0}</span>
               </div>
             </div>
         </div>
         </div>
       </div>
 
-      {/* Comments Section */}
-      <div className="mt-8">
-      <Comments entityType="track" entityId={track.id} />
+      <div className="mt-8 space-y-8">
+        <EntityReviewsSection
+          entityType="track"
+          entityId={track.id}
+          entitySlug={track.slug ?? slug}
+          variant="preview"
+        />
+        <EntityQuestionsSection
+          entityType="track"
+          entityId={track.id}
+          entitySlug={track.slug ?? slug}
+          variant="preview"
+        />
+        <Comments entityType="track" entityId={track.id} />
       </div>
     </main>
   );
