@@ -53,7 +53,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="max-w-md space-y-6">
+    <main className="max-w-md mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Log in</h1>
 
       <div className="card p-4 space-y-3">

@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import BackHome from "../components/BackHome";
+import { FavouriteOverlayHeart } from "../components/FavouriteControls";
 import { useEffect, useMemo, useState } from "react";
 import { supabaseBrowser } from "../../lib/supabase/browser";
+import { isFavouritedStatus } from "../../lib/favourites";
 
 type FolderRow = {
   id: number;
@@ -71,6 +73,42 @@ export default function MomentsPage() {
   const [raceSearchQuery, setRaceSearchQuery] = useState("");
   const [showTrackDropdown, setShowTrackDropdown] = useState(false);
   const [showRaceDropdown, setShowRaceDropdown] = useState(false);
+
+  const [favTrackIds, setFavTrackIds] = useState<Set<number>>(new Set());
+  const [favRaceIds, setFavRaceIds] = useState<Set<number>>(new Set());
+
+  async function loadFavouriteIds() {
+    try {
+      const { data: u, error: authErr } = await supabase.auth.getUser();
+      if (authErr || !u.user) {
+        setFavTrackIds(new Set());
+        setFavRaceIds(new Set());
+        return;
+      }
+      const uid = u.user.id;
+      const [utRes, urRes] = await Promise.all([
+        supabase.from("user_tracks").select("track_id,status").eq("user_id", uid),
+        supabase.from("user_races").select("race_id,status").eq("user_id", uid),
+      ]);
+      setFavTrackIds(
+        new Set(
+          (utRes.data ?? [])
+            .filter((row) => isFavouritedStatus(row.status as string))
+            .map((row) => row.track_id as number)
+        )
+      );
+      setFavRaceIds(
+        new Set(
+          (urRes.data ?? [])
+            .filter((row) => isFavouritedStatus(row.status as string))
+            .map((row) => row.race_id as number)
+        )
+      );
+    } catch {
+      setFavTrackIds(new Set());
+      setFavRaceIds(new Set());
+    }
+  }
 
   async function requireUser() {
     const { data, error } = await supabase.auth.getUser();
@@ -202,6 +240,8 @@ export default function MomentsPage() {
       if (raceIds.length > 0) {
         await loadRaceNames(raceIds);
       }
+
+      await loadFavouriteIds();
     } catch {}
   }
 
@@ -907,7 +947,7 @@ export default function MomentsPage() {
             <div key={m.id} className="card overflow-hidden">
               <div className="flex flex-col sm:flex-row gap-0">
                 {/* Photo Section (Left) */}
-                <div className="sm:w-48 w-full h-48 sm:h-auto bg-[var(--secondary)]/5 flex items-center justify-center shrink-0">
+                <div className="sm:w-48 w-full h-48 sm:h-auto bg-[var(--secondary)]/5 flex items-center justify-center shrink-0 relative">
                   {urls.length > 0 ? (
                     <img
                       src={urls[0]}
@@ -931,6 +971,21 @@ export default function MomentsPage() {
                       </svg>
                     </div>
                   )}
+                  {m.track_id ? (
+                    <FavouriteOverlayHeart
+                      kind="track"
+                      entityId={m.track_id}
+                      initialFavourited={favTrackIds.has(m.track_id)}
+                      onAfterToggle={() => void loadFavouriteIds()}
+                    />
+                  ) : m.race_id ? (
+                    <FavouriteOverlayHeart
+                      kind="race"
+                      entityId={m.race_id}
+                      initialFavourited={favRaceIds.has(m.race_id)}
+                      onAfterToggle={() => void loadFavouriteIds()}
+                    />
+                  ) : null}
                 </div>
 
                 {/* Details Section (Right) */}
