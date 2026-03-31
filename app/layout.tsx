@@ -5,8 +5,6 @@ import "./globals.css";
 import HeaderAuth from "./components/HeaderAuth";
 import MobileHeader from "./components/MobileHeader";
 import Image from "next/image";
-import { Analytics } from "@vercel/analytics/next";
-
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
@@ -62,9 +60,6 @@ export default function RootLayout({
                 <Link href="/races" className="btn-text-danger">
                   Races
                 </Link>
-                <Link href="/bucket-list" className="btn-text-danger">
-                  Bucket List
-                </Link>
               </nav>
 
               <HeaderAuth />
@@ -79,7 +74,6 @@ export default function RootLayout({
             © {new Date().getFullYear()} Grid Buddy
           </div>
         </footer>
-        <Analytics />
       </body>
     </html>
   );

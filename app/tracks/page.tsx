@@ -574,7 +574,7 @@ export default function TracksPage() {
           <Link href="/login" className="btn-text">
             Log in
           </Link>{" "}
-          to save tracks to Want or Been.
+          to save tracks.
         </div>
       )}
     </main>

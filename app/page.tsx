@@ -185,10 +185,10 @@ export default async function HomePage() {
             className="card p-6 hover:shadow-lg transition-all hover:border-[var(--primary)] group"
           >
             <h3 className="font-semibold text-lg mb-2 group-hover:text-[var(--primary)] transition-colors">
-              Favourites, Bucket List, Logbook
+              Log Your Journey
             </h3>
             <p className="text-sm text-[var(--secondary)]/70">
-              Save tracks and races from the catalogue, plan with Bucket List, and move visited ones to Logbook.
+              Plan and note down tracks and races you want to visit, and those you’ve already been.
             </p>
           </Link>
 

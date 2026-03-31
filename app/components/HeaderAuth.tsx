@@ -61,7 +61,9 @@ export default function HeaderAuth() {
 
   return (
     <div className="flex items-center gap-3 text-sm">
-      <span className="hidden sm:inline text-xs opacity-70">{email}</span>
+      <Link href="/bucket-list" className="btn-text-danger">
+        Profile
+      </Link>
       <button onClick={logout} className="btn-secondary px-3 py-1">
         Log out
       </button>

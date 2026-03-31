@@ -97,13 +97,6 @@ export default function MobileHeader() {
             >
               Races
             </Link>
-            <Link
-              href="/bucket-list"
-              className="block py-2 text-sm font-medium text-[var(--primary)] hover:text-[var(--accent-hover)] transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Bucket List
-            </Link>
           </nav>
         </div>
       )}

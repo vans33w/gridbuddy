@@ -3,7 +3,6 @@ import { supabaseServer } from "../../../lib/supabase/server";
 import { FavouriteMarkButton, FavouriteOverlayHeart } from "../../components/FavouriteControls";
 import { isFavouritedStatus } from "../../../lib/favourites";
 import AddToMoment from "../../components/AddToMoment";
-import Comments from "../../components/Comments";
 import EntityQuestionsSection from "../../components/EntityQuestionsSection";
 import EntityReviewsSection from "../../components/EntityReviewsSection";
 import TrackSustainabilityGuide from "../../components/TrackSustainabilityGuide";
@@ -49,6 +48,19 @@ export default async function TrackDetailBySlugPage(props: any) {
     .select("total_picks,want_picks,been_picks")
     .eq("track_id", track.id)
     .maybeSingle();
+
+  const { data: reviewRows } = await supabase
+    .from("entity_reviews")
+    .select("rating")
+    .eq("entity_type", "track")
+    .eq("entity_id", track.id);
+
+  const reviewCount = (reviewRows ?? []).length;
+  const averageRating =
+    reviewCount > 0
+      ? (reviewRows ?? []).reduce((sum: number, r: any) => sum + Number(r.rating ?? 0), 0) /
+        reviewCount
+      : null;
 
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
@@ -176,8 +188,15 @@ export default async function TrackDetailBySlugPage(props: any) {
             </h3>
             <div className="space-y-2 text-sm">
               <div>
-                <span className="font-medium text-[var(--secondary)]/70">Saved (Want + Been):</span>{" "}
+                <span className="font-medium text-[var(--secondary)]/70">Likes:</span>{" "}
                 <span className="text-[var(--secondary)]/80">{pop?.total_picks ?? 0}</span>
+              </div>
+              <div>
+                <span className="font-medium text-[var(--secondary)]/70">Average rating:</span>{" "}
+                <span className="text-[var(--secondary)]/80">
+                  {averageRating ? `${averageRating.toFixed(1)} / 5` : "No ratings yet"}
+                  {reviewCount > 0 ? ` (${reviewCount} review${reviewCount === 1 ? "" : "s"})` : ""}
+                </span>
               </div>
             </div>
         </div>
@@ -197,7 +216,6 @@ export default async function TrackDetailBySlugPage(props: any) {
           entitySlug={track.slug ?? slug}
           variant="preview"
         />
-        <Comments entityType="track" entityId={track.id} />
       </div>
     </main>
   );
