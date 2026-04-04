@@ -572,7 +572,7 @@ export default function RacesPage() {
           <Link href="/login" className="btn-text">
             Log in
           </Link>{" "}
-          to save races to Want or Been.
+          to save races.
         </div>
       )}
     </main>

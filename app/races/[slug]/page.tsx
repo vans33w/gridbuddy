@@ -4,7 +4,6 @@ import { supabaseServer } from "../../../lib/supabase/server";
 import { FavouriteMarkButton, FavouriteOverlayHeart } from "../../components/FavouriteControls";
 import { isFavouritedStatus } from "../../../lib/favourites";
 import AddToMoment from "../../components/AddToMoment";
-import Comments from "../../components/Comments";
 import EntityQuestionsSection from "../../components/EntityQuestionsSection";
 import EntityReviewsSection from "../../components/EntityReviewsSection";
 import RaceSustainabilityGuide from "../../components/RaceSustainabilityGuide";
@@ -212,7 +211,6 @@ export default async function RaceDetailPage(props: any) {
           entitySlug={race.slug ?? raw}
           variant="preview"
         />
-        <Comments entityType="race" entityId={race.id} />
       </div>
     </main>
   );
