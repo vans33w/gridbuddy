@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { supabaseServer } from "../../../lib/supabase/server";
-import { FavouriteMarkButton, FavouriteOverlayHeart } from "../../components/FavouriteControls";
-import { isFavouritedStatus } from "../../../lib/favourites";
 import AddToMoment from "../../components/AddToMoment";
+import EntityPopularityActions from "../../components/EntityPopularityActions";
+import type { PickStatus } from "../../../lib/favourites";
 import EntityQuestionsSection from "../../components/EntityQuestionsSection";
 import EntityReviewsSection from "../../components/EntityReviewsSection";
 import TrackSustainabilityGuide from "../../components/TrackSustainabilityGuide";
@@ -65,7 +65,7 @@ export default async function TrackDetailBySlugPage(props: any) {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
 
-  let myFavourited = false;
+  let pickStatus: PickStatus | null = null;
   if (userId) {
     const { data: ut } = await supabase
       .from("user_tracks")
@@ -74,7 +74,8 @@ export default async function TrackDetailBySlugPage(props: any) {
       .eq("track_id", track.id)
       .maybeSingle();
 
-    myFavourited = isFavouritedStatus(ut?.status as string | undefined);
+    const s = ut?.status as string | undefined;
+    pickStatus = s === "want" || s === "been" ? s : null;
   }
 
   return (
@@ -93,9 +94,6 @@ export default async function TrackDetailBySlugPage(props: any) {
       </h1>
 
         <div className="flex flex-wrap items-center gap-4">
-          {!track.hero_image_url && (
-            <FavouriteMarkButton kind="track" entityId={track.id} initialFavourited={myFavourited} />
-          )}
           <AddToMoment trackId={track.id} trackName={track.name} />
         </div>
       </div>
@@ -109,7 +107,6 @@ export default async function TrackDetailBySlugPage(props: any) {
             alt={track.name}
             className="w-full h-auto object-cover"
           />
-          <FavouriteOverlayHeart kind="track" entityId={track.id} initialFavourited={myFavourited} />
         </div>
       )}
 
@@ -179,27 +176,13 @@ export default async function TrackDetailBySlugPage(props: any) {
         </div>
       </div>
 
-          <div className="card p-6 space-y-4">
-            <h3
-              className="font-semibold text-lg text-[var(--secondary)]"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Popularity
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium text-[var(--secondary)]/70">Likes:</span>{" "}
-                <span className="text-[var(--secondary)]/80">{pop?.total_picks ?? 0}</span>
-              </div>
-              <div>
-                <span className="font-medium text-[var(--secondary)]/70">Average rating:</span>{" "}
-                <span className="text-[var(--secondary)]/80">
-                  {averageRating ? `${averageRating.toFixed(1)} / 5` : "No ratings yet"}
-                  {reviewCount > 0 ? ` (${reviewCount} review${reviewCount === 1 ? "" : "s"})` : ""}
-                </span>
-              </div>
-            </div>
-        </div>
+          <EntityPopularityActions
+            kind="track"
+            entityId={track.id}
+            initialStatus={pickStatus}
+            likesCount={pop?.total_picks ?? 0}
+            averageRating={averageRating}
+          />
         </div>
       </div>
 

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "../../lib/supabase/browser";
 import { FAVOURITE_DB_STATUS, isFavouritedStatus } from "../../lib/favourites";
 
-function HeartIcon({ filled, className = "w-5 h-5" }: { filled: boolean; className?: string }) {
+export function HeartIcon({ filled, className = "w-5 h-5" }: { filled: boolean; className?: string }) {
   if (filled) {
     return (
       <svg className={className} viewBox="0 0 24 24" aria-hidden fill="currentColor">
