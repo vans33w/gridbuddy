@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { supabaseServer } from "../../../lib/supabase/server";
-import { FavouriteMarkButton, FavouriteOverlayHeart } from "../../components/FavouriteControls";
-import { isFavouritedStatus } from "../../../lib/favourites";
 import AddToMoment from "../../components/AddToMoment";
+import EntityPopularityActions from "../../components/EntityPopularityActions";
+import type { PickStatus } from "../../../lib/favourites";
 import EntityQuestionsSection from "../../components/EntityQuestionsSection";
 import EntityReviewsSection from "../../components/EntityReviewsSection";
 import RaceSustainabilityGuide from "../../components/RaceSustainabilityGuide";
@@ -70,10 +70,25 @@ export default async function RaceDetailPage(props: any) {
     .eq("race_id", race.id)
     .maybeSingle();
 
+  const { data: reviewRows } = await supabase
+    .from("entity_reviews")
+    .select("rating")
+    .eq("entity_type", "race")
+    .eq("entity_id", race.id);
+
+  const reviewCount = (reviewRows ?? []).length;
+  const averageRating =
+    reviewCount > 0
+      ? (reviewRows ?? []).reduce(
+          (sum: number, r: { rating: unknown }) => sum + Number(r.rating ?? 0),
+          0
+        ) / reviewCount
+      : null;
+
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
 
-  let myFavourited = false;
+  let pickStatus: PickStatus | null = null;
   if (userId) {
     const { data: ur } = await supabase
       .from("user_races")
@@ -82,7 +97,8 @@ export default async function RaceDetailPage(props: any) {
       .eq("race_id", race.id)
       .maybeSingle();
 
-    myFavourited = isFavouritedStatus(ur?.status as string | undefined);
+    const s = ur?.status as string | undefined;
+    pickStatus = s === "want" || s === "been" ? s : null;
   }
 
   return (
@@ -101,9 +117,6 @@ export default async function RaceDetailPage(props: any) {
         </h1>
 
         <div className="flex flex-wrap items-center gap-4">
-          {!race.hero_image_url && (
-            <FavouriteMarkButton kind="race" entityId={race.id} initialFavourited={myFavourited} />
-          )}
           <AddToMoment raceId={race.id} raceName={race.name} />
         </div>
       </div>
@@ -117,7 +130,6 @@ export default async function RaceDetailPage(props: any) {
             alt={race.name}
             className="w-full h-auto object-cover"
           />
-          <FavouriteOverlayHeart kind="race" entityId={race.id} initialFavourited={myFavourited} />
         </div>
       )}
 
@@ -181,20 +193,13 @@ export default async function RaceDetailPage(props: any) {
         </div>
       </div>
 
-          <div className="card p-6 space-y-4">
-            <h3
-              className="font-semibold text-lg text-[var(--secondary)]"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Popularity
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div>
-                <span className="font-medium text-[var(--secondary)]/70">Saved (Want + Been):</span>{" "}
-                <span className="text-[var(--secondary)]/80">{pop?.total_picks ?? 0}</span>
-              </div>
-            </div>
-        </div>
+          <EntityPopularityActions
+            kind="race"
+            entityId={race.id}
+            initialStatus={pickStatus}
+            likesCount={pop?.total_picks ?? 0}
+            averageRating={averageRating}
+          />
         </div>
       </div>
 
