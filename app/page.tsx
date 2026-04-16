@@ -188,7 +188,7 @@ export default async function HomePage() {
               Log Your Journey
             </h3>
             <p className="text-sm text-[var(--secondary)]/70">
-              Plan and note down tracks and races you want to visit, and those you’ve already been.
+              Plan tracks and races you want to visit, and note down those you’ve already been.
             </p>
           </Link>
 
