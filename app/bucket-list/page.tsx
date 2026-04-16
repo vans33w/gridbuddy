@@ -31,14 +31,9 @@ export default async function BucketListPage() {
 
   return (
     <main className="space-y-8">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-          My Profile
-        </h1>
-        <p className="text-sm text-[var(--secondary)]/70">
-          Favourites, Bucket List (Want), and Logbook (Been) are all powered by tracks and races from the database.
-        </p>
-      </div>
+      <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+        My Profile
+      </h1>
 
       <PicksClient initialTracks={initialTracks} initialRaces={initialRaces} />
       <EventsClient userId={user.id} />
